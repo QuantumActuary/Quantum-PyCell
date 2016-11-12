@@ -1,0 +1,8 @@
+os: osx
+osx_image: xcode8
+script:
+  - git clone https://github.com/uclatommy/Quantum-Installer
+  - cd Quantum-Installer
+  - ./dev-install.sh
+  - mkdir build && cd build
+  - cmake .. && make install
