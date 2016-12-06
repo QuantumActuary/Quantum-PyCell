@@ -16,6 +16,7 @@ include_directories(
     ${CMAKE_INSTALL_PREFIX}/include
     ${PYTHON_INCLUDE_DIRS}
     /usr/local/gtest/include
+    /usr/local/cellar/boost/1.62.0/include
 )
 
 LINK_DIRECTORIES(
