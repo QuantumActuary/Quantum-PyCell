@@ -1,4 +1,3 @@
-import Quantum
 import pygal
 from pygal import Config
 from pandas import Series

@@ -14,6 +14,7 @@ add_definitions(-std=c++1y)
 include_directories(
     .
     ${CMAKE_INSTALL_PREFIX}/include
+    ${CMAKE_INSTALL_PREFIX}/include/Quantum
     ${PYTHON_INCLUDE_DIRS}
     /usr/local/gtest/include
     /usr/local/cellar/boost/1.62.0/include
@@ -22,7 +23,6 @@ include_directories(
 LINK_DIRECTORIES(
     ${PYTHON_LIBRARIES}
     /usr/local/gtest/lib
-    /usr/local/lib
 )
 
 add_library(${PROJECT_NAME} SHARED

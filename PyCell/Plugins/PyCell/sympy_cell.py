@@ -1,4 +1,3 @@
-import Quantum
 from PyCell.custom_cell import Custom
 from sympy import diff
 from sympy import integrate
@@ -22,7 +21,7 @@ class Differentiate(Custom):
 
 
 class Integrate(Custom):
-    inputs = {'f(x)': None, 'dx': None, 'lower limit': -oo,
+    inputs = {'f(x)': None, 'dx': None, 'lower limit':-oo,
               'upper limit': oo}
     outputs = {'F(x)': None}
     required = ['f(x)', 'dx']

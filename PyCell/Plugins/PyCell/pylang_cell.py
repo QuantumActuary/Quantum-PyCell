@@ -4,7 +4,6 @@ Pylang
 
 The pylang plugin provides common python functions.
 """
-import Quantum
 from PyCell.custom_cell import Custom
 
 

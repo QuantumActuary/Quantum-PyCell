@@ -4,7 +4,7 @@ Custom Cell
 
 Provides prototype cell from which all other cells should derive.
 """
-import Quantum
+from Quantum import QuReturnCode
 from traceback_formatter import pprint_tb
 import sys
 
@@ -85,4 +85,4 @@ class Custom(object):
         return a value to the scheduler. This function will manage that for
         you.
         """
-        return Quantum.OK
+        return QuReturnCode.str2int['OK']

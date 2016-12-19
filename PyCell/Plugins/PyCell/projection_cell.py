@@ -1,4 +1,3 @@
-import Quantum
 from PyCell.custom_cell import Custom
 import ast
 import operator as op

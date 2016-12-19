@@ -32,9 +32,11 @@ private:
     bp::list internal_use;
     bp::object py_id;
     static std::atomic<int> id_counter;
+    CellSockets *metadata;
 public:
     static void declare_params(CellSockets&);
     void declare_io_inst(const CellSockets&, CellSockets&, CellSockets&);
+    void declare_metadata(CellSockets&);
     void configure(const CellSockets&, const CellSockets&, const CellSockets&);
     //void reset(CellSockets&, CellSockets&, CellSockets&);
     void start();

@@ -1,4 +1,4 @@
-import Quantum
+from Quantum import QuReturnCode
 from PyCell.custom_cell import Custom
 import time
 
@@ -7,7 +7,7 @@ class Sleep(Custom):
     inputs = {'seconds': 0}
     inflows = ['>>']
     outputs = {'done': False}
-    outflows = {'>>': Quantum.UNKNOWN}
+    outflows = {'>>': QuReturnCode.str2int['UNKNOWN']}
     required = ['>>', 'seconds']
     internal_use = ['>>']
 
@@ -18,7 +18,7 @@ class Sleep(Custom):
         time.sleep(self.inputs['seconds'])
         print("I have awakened!")
         self.outputs['done'] = True
-        self.outflows['>>'] = Quantum.OK
+        self.outflows['>>'] = QuReturnCode.str2int['OK']
         return super().process()
 
     def return_msg(self):
@@ -28,7 +28,7 @@ class Sleep(Custom):
 class Print(Custom):
     inputs = {'msg': 'Hello World!'}
     inflows = ['>>']
-    outflows = {'>>': Quantum.UNKNOWN}
+    outflows = {'>>': QuReturnCode.str2int['UNKNOWN']}
     required = ['>>', 'msg']
     internal_use = ['>>']
     always_reprocess = True
@@ -39,10 +39,10 @@ class Print(Custom):
     def process(self):
         try:
             print(self.inputs['msg'])
-            self.outflows['>>'] = Quantum.OK
+            self.outflows['>>'] = QuReturnCode.str2int['OK']
             self.return_msg_ = 'Print execution done.'
         except:
-            self.outflows['>>'] = Quantum.UNKNOWN
+            self.outflows['>>'] = QuReturnCode.str2int['UNKNOWN']
             self.return_msg_ = 'Problem printing!'
         return super().process()
 
@@ -51,8 +51,8 @@ class Print(Custom):
 
 
 class Start(Custom):
-    outflows = {'>>': Quantum.OK}
+    outflows = {'>>': QuReturnCode.str2int['OK']}
 
     def process(self):
-        self.outflows['>>'] = Quantum.OK
+        self.outflows['>>'] = QuReturnCode.str2int['OK']
         return super().process()

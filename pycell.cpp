@@ -12,7 +12,8 @@
 
 extern "C" PYCELL_API int getEngineVersion()
 {
-    return 1;
+    return 2; //New API: Added metadata socket
+              //         No more manual calls to declare_params, etc.
 }
 
 extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
@@ -26,15 +27,13 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
 
     try
     {
-//    	std::string plugin_dir = kernel.getRootDirectory() + "/mods/plugins/PyCell";
-//        std::string pycell_tests = plugin_dir + "/tests";
         PyRun_SimpleString("import sys, os");
         PyRun_SimpleString(std::string("ins_path = os.path.join('"
                 + kernel.getRootDirectory() + "','mods','PyCell')").c_str());
-        PyRun_SimpleString("sys.path.insert(0, ins_path)");
+        PyRun_SimpleString("sys.path.insert(1, ins_path)");
         PyRun_SimpleString(std::string("ins_path = os.path.join('"
                 + kernel.getRootDirectory() + "','mods','PyCell','tests')").c_str());
-        PyRun_SimpleString("sys.path.insert(0, ins_path)");
+        PyRun_SimpleString("sys.path.insert(1, ins_path)");
         bp::object py_registry = bp::import(bp::str("PyCell.registry"));
         bp::list py_cells = bp::extract<bp::list>(py_registry.attr("py_cells"));
 
@@ -50,14 +49,13 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
             //get our cell name from registry in python
             std::string name = std::string(bp::extract<const char*>(
                     (py_cells[i])["name"]));
-            add_this->declare_params();
 
             //set the user defined module in our cell parameter by getting from python
             std::string module = std::string(bp::extract<const char*>((py_cells[i])["module"]));
             add_this->parameters.get<std::string>("py_import") = module;
             //set it
             add_this->parameters["py_object"] << name;
-            add_this->name(name);
+            add_this->metadata["name"] << "Quantum::PyCell::" + name;
             add_this->declare_io_inst();
 
             std::string cell_doc = "";
@@ -81,7 +79,7 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
             {
                 cell_doc = bp::extract<std::string>(doc);
             }
-            add_this->short_doc(cell_doc);
+            add_this->metadata["short_doc"] << cell_doc;
             bp::list categories = bp::extract<bp::list>((py_cells[i])["categories"]);
             for(int j=0; j < len(categories); j++)
             {
@@ -95,11 +93,4 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
     {
         PyErr_Print();
     }
-    //setup gtest parameters
-    int argc = 2;
-    char file[] = "dummy.dylib"; //this doesn't do anything
-    char arg[] = "--gtest_color=true";
-    char* option[2] = {file, arg};
-    ::testing::InitGoogleTest(&argc, option);
-    RUN_ALL_TESTS();
 }

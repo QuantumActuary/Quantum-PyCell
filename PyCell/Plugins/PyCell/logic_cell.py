@@ -5,7 +5,7 @@ Logic
 Logic cells are graph nodes that determine the branching structure of process
 execution.
 """
-import Quantum
+from Quantum import QuReturnCode
 from PyCell.custom_cell import Custom
 
 
@@ -31,19 +31,19 @@ class If(Custom):
         self.return_msg_ = "All is quiet..."
         self.inputs = {'condition': True}
         self.inflows = ['>>']
-        self.outflows = {'true >>': Quantum.UNKNOWN,
-                         'false >>': Quantum.UNKNOWN}
+        self.outflows = {'true >>': QuReturnCode.str2int['UNKNOWN'],
+                         'false >>': QuReturnCode.str2int['UNKNOWN']}
 
     def return_msg(self):
         return self.return_msg_
 
     def process(self):
         if self.inputs['condition']:
-            self.outflows['true >>'] = Quantum.OK
-            self.outflows['false >>'] = Quantum.UNKNOWN
+            self.outflows['true >>'] = QuReturnCode.str2int['OK']
+            self.outflows['false >>'] = QuReturnCode.str2int['UNKNOWN']
         else:
-            self.outflows['false >>'] = Quantum.OK
-            self.outflows['true >>'] = Quantum.UNKNOWN
+            self.outflows['false >>'] = QuReturnCode.str2int['OK']
+            self.outflows['true >>'] = QuReturnCode.str2int['UNKNOWN']
 
         return super().process()
 

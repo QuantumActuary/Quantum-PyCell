@@ -15,12 +15,10 @@ namespace Quantum{
 namespace PyCell{
 
 std::atomic<int> Custom::id_counter{0};
-//bp::object pymain(bp::handle<>(bp::borrowed(PyImport_AddModule("__main__"))));
-//bp::object pyglobals = pymain.attr("__dict__");
 
 void Custom::declare_params(CellSockets &p)
 {
-    p.declare<std::string>("py_import", "Module import name.", "custom");
+    p.declare<std::string>("py_import", "Module import name.", "PyCell");
     p["py_import"]->str = [&p](){return p.get<std::string>("py_import");};
     p.declare<std::string>("py_object", "Object import name.", "HelloPyCell");
     p["py_object"]->str = [&p](){return p.get<std::string>("py_object");};
@@ -48,7 +46,6 @@ void Custom::declare_params(CellSockets &p)
 
 void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& o)
 {
-//    std::cout<<"void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& o)"<<std::endl;//LOG
     AcquireGIL lock = AcquireGIL();
     bp::object pymodule = bp::import(bp::str(p.get<std::string>("py_import")));
     __name__ = pymodule.attr(p.get<std::string>("py_object").c_str());
@@ -136,9 +133,13 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
     }
 }
 
+void Custom::declare_metadata(CellSockets &m)
+{
+    metadata = &m;
+}
+
 void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSockets& o)
 {
-//    std::cout<<"void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSockets& o)"<<std::endl;//LOG
     AcquireGIL lock = AcquireGIL();
     //set all inputs
     bp::list ik = in.keys();
@@ -196,7 +197,6 @@ void Custom::deactivate()
 
 ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
 {
-//    std::cout<<"ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)"<<std::endl;//LOG
     AcquireGIL lock = AcquireGIL();
     int result = static_cast<int>(UNKNOWN);
     //set all inputs
@@ -216,6 +216,7 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         {
             return_msg_ = std::string(bp::extract<const char*>(
                           self.attr("return_msg_")));
+            (*metadata)["return_msg"] << return_msg_;
         }
 
         //save results to outputs
