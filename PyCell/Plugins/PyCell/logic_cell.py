@@ -31,19 +31,19 @@ class If(Custom):
         self.return_msg_ = "All is quiet..."
         self.inputs = {'condition': True}
         self.inflows = ['>>']
-        self.outflows = {'true >>': QuReturnCode.str2int['UNKNOWN'],
-                         'false >>': QuReturnCode.str2int['UNKNOWN']}
+        self.outflows = {'true >>': QuReturnCode('UNKNOWN').returncode,
+                         'false >>': QuReturnCode('UNKNOWN').returncode}
 
     def return_msg(self):
         return self.return_msg_
 
     def process(self):
         if self.inputs['condition']:
-            self.outflows['true >>'] = QuReturnCode.str2int['OK']
-            self.outflows['false >>'] = QuReturnCode.str2int['UNKNOWN']
+            self.outflows['true >>'] = QuReturnCode('OK').returncode
+            self.outflows['false >>'] = QuReturnCode('UNKNOWN').returncode
         else:
-            self.outflows['false >>'] = QuReturnCode.str2int['OK']
-            self.outflows['true >>'] = QuReturnCode.str2int['UNKNOWN']
+            self.outflows['false >>'] = QuReturnCode('OK').returncode
+            self.outflows['true >>'] = QuReturnCode('UNKNOWN').returncode
 
         return super().process()
 

@@ -19,7 +19,6 @@ class Sympify(Custom):
 
     def __init__(self):
         self.return_msg_ = "Nothing to report!"
-        self.return_code = QuReturnCode.str2int['OK']
 
     def process(self):
         self.outputs['f(x)'] = sympify(self.inputs['f(x)'])
@@ -38,13 +37,13 @@ class Exponentiate(Custom):
 
     def __init__(self):
         self.return_msg_ = "Nothing to report!"
-        self.return_code = QuReturnCode.str2int['OK']
+        self.return_code = QuReturnCode('OK')
 
     def process(self):
         for k in self.inputs.keys():
             if isinstance(self.inputs[k], str):
                 self.inputs[k] = var(self.inputs[k])
-        if self.return_code == QuReturnCode.str2int['OK']:
+        if self.return_code.status == 'OK':
             self.outputs['f(x)'] = (self.inputs['base'] ** self.inputs['exp'])
         return super().process()
 
@@ -61,13 +60,13 @@ class Exp(Custom):
 
     def __init__(self):
         self.return_msg_ = "Nothing to report!"
-        self.return_code = QuReturnCode.str2int['OK']
+        self.return_code = QuReturnCode('OK')
 
     def process(self):
         for k in self.inputs.keys():
             if isinstance(self.inputs[k], str):
                 self.inputs[k] = var(self.inputs[k])
-        if self.return_code == Quantum.OK:
+        if self.return_code.status == 'OK':
             self.outputs['f(x)'] = exp(self.inputs['exp'])
         return super().process()
 
@@ -84,13 +83,13 @@ class Expand(Custom):
 
     def __init__(self):
         self.return_msg_ = "Nothing to report!"
-        self.return_code = QuReturnCode.str2int['OK']
+        self.return_code = QuReturnCode('OK')
 
     def process(self):
         for k in self.inputs.keys():
             if isinstance(self.inputs[k], str):
                 self.inputs[k] = var(self.inputs[k])
-        if self.return_code == QuReturnCode.str2int['OK']:
+        if self.return_code.status == 'OK':
             self.outputs['f(x)'] = self.inputs['f(x)'].expand()
         return super().process()
 

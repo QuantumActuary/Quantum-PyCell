@@ -7,7 +7,7 @@ class Sleep(Custom):
     inputs = {'seconds': 0}
     inflows = ['>>']
     outputs = {'done': False}
-    outflows = {'>>': QuReturnCode.str2int['UNKNOWN']}
+    outflows = {'>>': QuReturnCode('UNKNOWN').returncode}
     required = ['>>', 'seconds']
     internal_use = ['>>']
 
@@ -18,7 +18,7 @@ class Sleep(Custom):
         time.sleep(self.inputs['seconds'])
         print("I have awakened!")
         self.outputs['done'] = True
-        self.outflows['>>'] = QuReturnCode.str2int['OK']
+        self.outflows['>>'] = QuReturnCode('OK').returncode
         return super().process()
 
     def return_msg(self):
@@ -28,7 +28,7 @@ class Sleep(Custom):
 class Print(Custom):
     inputs = {'msg': 'Hello World!'}
     inflows = ['>>']
-    outflows = {'>>': QuReturnCode.str2int['UNKNOWN']}
+    outflows = {'>>': QuReturnCode('UNKNOWN').returncode}
     required = ['>>', 'msg']
     internal_use = ['>>']
     always_reprocess = True
@@ -39,10 +39,10 @@ class Print(Custom):
     def process(self):
         try:
             print(self.inputs['msg'])
-            self.outflows['>>'] = QuReturnCode.str2int['OK']
+            self.outflows['>>'] = QuReturnCode('OK').returncode
             self.return_msg_ = 'Print execution done.'
         except:
-            self.outflows['>>'] = QuReturnCode.str2int['UNKNOWN']
+            self.outflows['>>'] = QuReturnCode('UNKNOWN').returncode
             self.return_msg_ = 'Problem printing!'
         return super().process()
 
@@ -51,8 +51,8 @@ class Print(Custom):
 
 
 class Start(Custom):
-    outflows = {'>>': QuReturnCode.str2int['OK']}
+    outflows = {'>>': QuReturnCode('OK').returncode}
 
     def process(self):
-        self.outflows['>>'] = QuReturnCode.str2int['OK']
+        self.outflows['>>'] = QuReturnCode('OK').returncode
         return super().process()

@@ -85,4 +85,4 @@ class Custom(object):
         return a value to the scheduler. This function will manage that for
         you.
         """
-        return QuReturnCode.str2int['OK']
+        return QuReturnCode('OK').returncode
