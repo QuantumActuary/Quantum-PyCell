@@ -24,6 +24,7 @@ private:
     bp::object __name__;
     bp::object self;
     std::string return_msg_;
+    bool threadsafe_;
     bp::dict in;
     bp::dict out;
     bp::list required;

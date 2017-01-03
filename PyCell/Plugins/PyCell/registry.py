@@ -345,16 +345,16 @@ py_cells = [
     'module': 'PyCell.pygal_cell',
     'categories': ['Data', 'Output']
     },
-    {
-    'name': 'Read_CSV_df',
-    'module': 'PyCell.df_cell',
-    'categories': ['Test', 'Import']
-    },
-    {
-    'name': 'Head_df',
-    'module': 'PyCell.df_cell',
-    'categories': ['Test', 'Modify']
-    },
+#     {
+#     'name': 'Read_CSV_df',
+#     'module': 'PyCell.df_cell',
+#     'categories': ['Test', 'Import']
+#     },
+#     {
+#     'name': 'Head_df',
+#     'module': 'PyCell.df_cell',
+#     'categories': ['Test', 'Modify']
+#     },
 #     {
 #     'name': 'Plot',
 #     'module': 'PyCell.pygal_cell',

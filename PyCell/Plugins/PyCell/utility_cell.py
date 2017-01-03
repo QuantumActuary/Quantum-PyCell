@@ -32,6 +32,7 @@ class Print(Custom):
     required = ['>>', 'msg']
     internal_use = ['>>']
     always_reprocess = True
+    threadsafe = True
 
     def __init__(self):
         self.return_msg_ = "Ready... to print money!"

@@ -42,6 +42,10 @@ void Custom::declare_params(CellSockets &p)
     p.declare<std::string>("py_internal_use",
                 "Name of Python variable containing list of internal use"
                 " variables", "internal_use");
+
+    p.declare<std::string>("py_threadsafe",
+                "Name of Python boolean indicating if the cell is threadsafe",
+                "threadsafe");
 }
 
 void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& o)
@@ -68,6 +72,13 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
 
     internal_use = bp::extract<bp::list>(self.attr(
             p.get<std::string>("py_internal_use").c_str()));
+
+    if(PyObject_HasAttrString(self.ptr(), "threadsafe"))
+    {
+        threadsafe_ = bp::extract<bool>(self.attr(
+                p.get<std::string>("py_threadsafe").c_str()));
+        (*metadata)["threadsafe"] << threadsafe_;
+    }
 
     py_id = bp::object(++id_counter);
     self.attr("py_id") = py_id;

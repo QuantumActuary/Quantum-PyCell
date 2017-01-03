@@ -2,6 +2,7 @@ import unittest
 import logic_cell
 import Quantum
 from Quantum import QuCell, QuCircuit
+from Quantum import QuReturnCode
 from ctrl_command import console_printer
 
 
@@ -20,29 +21,29 @@ class Test_LogicCells(unittest.TestCase):
     def test_if(self):
         self.iffer.inputs['condition'] = True
         self.iffer.process()
-        self.assertEqual(self.iffer.outflows['true >>'], Quantum.OK)
-        self.assertEqual(self.iffer.outflows['false >>'], Quantum.UNKNOWN)
+        self.assertEqual(self.iffer.outflows['true >>'], QuReturnCode('OK'))
+        self.assertEqual(self.iffer.outflows['false >>'], QuReturnCode('UNKNOWN'))
 
         self.iffer.inputs['condition'] = False
         self.iffer.process()
-        self.assertEqual(self.iffer.outflows['false >>'], Quantum.OK)
-        self.assertEqual(self.iffer.outflows['true >>'], Quantum.UNKNOWN)
+        self.assertEqual(self.iffer.outflows['false >>'], QuReturnCode('OK'))
+        self.assertEqual(self.iffer.outflows['true >>'], QuReturnCode('UNKNOWN'))
 
     def test_if_cell(self):
         self.iffer_cell.inputs['condition'] << False
         self.iffer_cell.process()
         result = []
         self.iffer_cell.outputs['true >>'] >> result
-        self.assertEqual(result[-1], Quantum.UNKNOWN)
+        self.assertEqual(result[-1], QuReturnCode('UNKNOWN'))
         self.iffer_cell.outputs['false >>'] >> result
-        self.assertEqual(result[-1], Quantum.OK)
+        self.assertEqual(result[-1], QuReturnCode('OK'))
 
         self.iffer_cell.inputs['condition'] << True
         self.iffer_cell.process()
         self.iffer_cell.outputs['true >>'] >> result
-        self.assertEqual(result[-1], Quantum.OK)
+        self.assertEqual(result[-1], QuReturnCode('OK'))
         self.iffer_cell.outputs['false >>'] >> result
-        self.assertEqual(result[-1], Quantum.UNKNOWN)
+        self.assertEqual(result[-1], QuReturnCode('UNKNOWN'))
 
 @console_printer
 def run_test():
