@@ -253,7 +253,7 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         {
             const char* key = bp::extract<const char*>(outflow.keys()[k]);
             int val = bp::extract<int>(outflow[key]);
-            if(val==OK)
+            if(val==static_cast<int>(OK))
             {
                 ReleaseGIL unlock = ReleaseGIL();
                 o[key] << static_cast<ReturnCode>(val);
@@ -269,7 +269,7 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         return_msg_ = "Unknown failure in process.";
     }
 
-    if(result==0)
+    if(result==static_cast<int>(OK))
     {
         ReleaseGIL unlock = ReleaseGIL();
         return static_cast<ReturnCode>(result);

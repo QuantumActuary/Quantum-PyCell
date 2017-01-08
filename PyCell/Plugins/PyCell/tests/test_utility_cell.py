@@ -1,7 +1,7 @@
 import utility_cell
 import unittest
 import Quantum
-from Quantum import QuCell, QuCircuit
+from Quantum import QuCell, QuCircuit, QuReturnCode
 from ctrl_command import console_printer
 
 
@@ -28,6 +28,10 @@ class Test_UtilityCells(unittest.TestCase):
         result = []
         self.sleeper_cell.outputs['done'] >> result
         self.assertTrue(result[-1])
+
+    def test_starter_cell(self):
+        result = self.starter_cell.process()
+        self.assertEqual(result, QuReturnCode('OK').returncode)
 
 
 @console_printer

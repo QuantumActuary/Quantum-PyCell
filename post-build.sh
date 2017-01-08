@@ -13,4 +13,8 @@ osxrelocator -r . ./build @executable_path/../Resources/.kivy/extensions/plugins
 # install_name_tool -change /usr/lib/libc++.1.dylib @executable_path/lib/libc++.1.dylib ${EXT}${FILE}
 cp -r ${PY}Plugins/* ${MOD}
 cp ${BIN}/${FILE} ${EXT}
+{
+echo "cp -r ${PY}Plugins/* ${MOD}"
+} > refresh.sh;
+chmod 744 refresh.sh;
 echo "PyCell installed to $EXT"
