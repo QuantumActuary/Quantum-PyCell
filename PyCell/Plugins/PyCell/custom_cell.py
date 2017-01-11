@@ -54,6 +54,7 @@ class Custom(object):
     required = []
     internal_use = []
     always_reprocess = False
+    threadsafe = False
 
     def __init__(self):
         self.py_id = 0  # value generated in c++
