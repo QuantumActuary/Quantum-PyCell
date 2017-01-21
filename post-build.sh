@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+set -e
 BIN=$1
 FILE=$2
 EXT="/Applications/Quantum.app/Contents/Resources/.kivy/extensions/plugins/"
