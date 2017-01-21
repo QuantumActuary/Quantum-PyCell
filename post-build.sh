@@ -14,7 +14,7 @@ osxrelocator -r . ./build @executable_path/../Resources/.kivy/extensions/plugins
 cp -r ${PY}Plugins/* ${MOD}
 cp ${BIN}/${FILE} ${EXT}
 {
-echo "cp -r ${PY}Plugins/* ${MOD}"
+echo "cp -r ${PY}Plugins/* ${EXT}"
 } > refresh.sh;
 chmod 744 refresh.sh;
 echo "PyCell installed to $EXT"
