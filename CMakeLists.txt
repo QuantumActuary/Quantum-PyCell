@@ -37,10 +37,10 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
     gtest
 )
 
-install(TARGETS ${PROJECT_NAME} DESTINATION extensions/plugins)
+install(TARGETS ${PROJECT_NAME} DESTINATION mods/plugins)
 install(FILES pycell.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 install(FILES pycell_config.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 install(FILES PyCell/custom.h DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
-install(DIRECTORY PyCell/Plugins DESTINATION ${CMAKE_INSTALL_PREFIX}/extensions)
+install(DIRECTORY PyCell/Plugins DESTINATION ${CMAKE_INSTALL_PREFIX}/mods)
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ../post-build.sh . lib${PROJECT_NAME}.dylib)
