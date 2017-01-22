@@ -34,8 +34,10 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
         PyRun_SimpleString(std::string("ins_path = os.path.join('"
                 + kernel.getRootDirectory() + "','mods','PyCell','tests')").c_str());
         PyRun_SimpleString("sys.path.insert(1, ins_path)");
-        bp::object py_registry = bp::import(bp::str("PyCell.registry"));
-        bp::list py_cells = bp::extract<bp::list>(py_registry.attr("py_cells"));
+        bp::object py_registry = bp::import(bp::str("PyCell"));
+        PyRun_SimpleString("from PyCell import *");
+        PyRun_SimpleString("from UDPyCell import *");
+        bp::list py_cells = bp::extract<bp::list>(py_registry.attr("registry"));
 
         bp::object main_module = bp::import("__main__");
         bp::object main_namespace = main_module.attr("__dict__");
