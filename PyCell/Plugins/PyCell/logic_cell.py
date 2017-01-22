@@ -6,7 +6,51 @@ Logic cells are graph nodes that determine the branching structure of process
 execution.
 """
 from Quantum import QuReturnCode
+from PyCell import registry
 from PyCell.custom_cell import Custom
+
+registry += [
+    {
+    'name': 'If',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Flow Control']
+    },
+    {
+    'name': 'Eq',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Gt',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Gte',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Lt',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Lte',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Bitwise_Or',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    },
+    {
+    'name': 'Bitwise_And',
+    'module': 'PyCell.logic_cell',
+    'categories': ['Operators', 'Boolean']
+    }
+    ]
 
 
 class If(Custom):

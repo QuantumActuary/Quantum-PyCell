@@ -6,10 +6,23 @@ from panel_factory import OSXWindowFactory
 from pygal_panel import PygalAssembler
 from pygal_panel import PygalWidget
 from pygal.style import DarkColorizedStyle
+from PyCell import registry
 from PyCell.custom_cell import Custom
 from kivy.clock import mainthread
 from kivy.app import App
 
+registry += [
+    {
+    'name': 'Make_Chart',
+    'module': 'PyCell.pygal_cell',
+    'categories': ['Data', 'Output']
+    },
+    {
+    'name': 'Add_To_Chart',
+    'module': 'PyCell.pygal_cell',
+    'categories': ['Data', 'Output']
+    }
+    ]
 
 class Pygal_Chart(object):
     assembler = PygalAssembler()

@@ -1,8 +1,21 @@
+from PyCell import registry
 from PyCell.custom_cell import Custom
 from sympy import diff
 from sympy import integrate
 from sympy import oo
 
+registry += [
+    {
+    'name': 'Differentiate',
+    'module': 'PyCell.sympy_cell',
+    'categories': ['Math', 'Symbolic']
+    },
+    {
+    'name': 'Integrate',
+    'module': 'PyCell.sympy_cell',
+    'categories': ['Math', 'Symbolic']
+    }
+    ]
 
 class Differentiate(Custom):
     inputs = {'f(x)': None, 'dx': None}

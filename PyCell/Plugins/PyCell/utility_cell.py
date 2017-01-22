@@ -1,7 +1,25 @@
 from Quantum import QuReturnCode
+from PyCell import registry
 from PyCell.custom_cell import Custom
 import time
 
+registry += [
+    {
+    'name': 'Sleep',
+    'module': 'PyCell.utility_cell',
+    'categories': ['Flow Control']
+    },
+    {
+    'name': 'Print',
+    'module': 'PyCell.utility_cell',
+    'categories': ['Utility']
+    },
+    {
+    'name': 'Start',
+    'module': 'PyCell.utility_cell',
+    'categories': ['Flow Control']
+    }
+    ]
 
 class Sleep(Custom):
     inputs = {'seconds': 0}

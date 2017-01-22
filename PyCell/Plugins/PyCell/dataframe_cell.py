@@ -7,11 +7,135 @@ Provides Pandas DataFrame functions.
 import Quantum
 import os
 import pandas as pd
+from PyCell import registry
 from PyCell.custom_cell import Custom
 from PyCell.custom_cell import exception_raiser
 # import matplotlib.pyplot as plt
 from kivy.clock import mainthread
 from multiprocessing import Process, Pipe
+
+registry += [
+    {
+    'name': 'Read_CSV',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Import']
+    },
+    {
+    'name': 'Head',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Tail',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Sort_Values',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Column',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'IsNull',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'NotNull',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Select',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Sort_Index',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Value_Counts',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Str_Len',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'String']
+    },
+    {
+    'name': 'Str_Contains',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'String']
+    },
+    {
+    'name': 'Str_StartsWith',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'String']
+    },
+    {
+    'name': 'GroupBy',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Set_Index',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Unstack',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Stack',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Year',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'DateTime']
+    },
+    {
+    'name': 'Month',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'DateTime']
+    },
+    {
+    'name': 'Day',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'DateTime']
+    },
+    {
+    'name': 'DayOfWeek',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify', 'DateTime']
+    },
+    {
+    'name': 'Merge',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Pivot',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Update',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    }
+    ]
 
 plugin_cache = os.path.join(os.environ['HOME'], '.kivy', '__cache__')
 os.makedirs(plugin_cache, exist_ok=True)

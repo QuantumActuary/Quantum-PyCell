@@ -1,7 +1,21 @@
 from PyCell.custom_cell import Custom
+from PyCell import registry
 import ast
 import operator as op
 import numpy as np
+
+registry += [
+    {
+    'name': 'AstColumn',
+    'module': 'PyCell.projection_cell',
+    'categories': ['Math', 'Numeric']
+    },
+    {
+    'name': 'NumpyColumn',
+    'module': 'PyCell.projection_cell',
+    'categories': ['Math', 'Numeric']
+    },
+    ]
 
 # supported operators
 operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,

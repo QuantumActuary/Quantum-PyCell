@@ -4,8 +4,51 @@ Pylang
 
 The pylang plugin provides common python functions.
 """
+from PyCell import registry
 from PyCell.custom_cell import Custom
 
+registry += [
+    {
+    'name': 'Variable',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Memory']
+    },
+    {
+    'name': 'Add',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
+    },
+    {
+    'name': 'Subtract',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
+    },
+    {
+    'name': 'Mul',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
+    },
+    {
+    'name': 'Int_Div',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
+    },
+    {
+    'name': 'Div',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
+    },
+    {
+    'name': 'To_List',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Memory']
+    },
+    {
+    'name': 'Len',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Utility']
+    }
+    ]
 
 class Variable(Custom):
     """
