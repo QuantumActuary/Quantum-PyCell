@@ -71,6 +71,7 @@ class If(Custom):
     required = ['condition', '>>']
     internal_use = ['>>']
     always_reprocess = True
+    threadsafe = True
 
     def __init__(self):
         self.return_msg_ = "All is quiet..."

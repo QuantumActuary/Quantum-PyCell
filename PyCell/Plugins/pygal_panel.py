@@ -88,7 +88,7 @@ class PygalAssembler(PanelAssembler):
         else:
             print("Please supply a PygalWidget object!")
 
-    def build_inner(self):
+    def _build_inner(self):
         if self._chart is not None:
             return PygalAssembler.UI_Pygal_Inner(self._chart)
         else:
@@ -98,7 +98,7 @@ class PygalAssembler(PanelAssembler):
         factory.add_panel()
         factory.add_icon(Styles.title_icon(Styles.icon('1', 'Heydings-Common')))
         factory.add_title(Styles.title('PLOT VIEWPORT'))
-        inner = self.build_inner()
+        inner = self._build_inner()
         factory.add_inner(inner)
         factory.add_dismiss()
         result = factory.get_panel()

@@ -2,7 +2,7 @@ import pygal
 from pygal import Config
 from pandas import Series
 from pandas import DataFrame
-from panel_factory import OSXWindowFactory
+from panel_factories import OSXWindowFactory
 from pygal_panel import PygalAssembler
 from pygal_panel import PygalWidget
 from pygal.style import DarkColorizedStyle
