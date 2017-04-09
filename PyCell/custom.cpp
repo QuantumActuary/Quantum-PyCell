@@ -40,12 +40,12 @@ void Custom::declare_params(CellSockets &p)
             "Name of Python variable containing dict of outputs", "outputs");
 
     p.declare<std::string>("py_internal_use",
-                "Name of Python variable containing list of internal use"
-                " variables", "internal_use");
+            "Name of Python variable containing list of internal use"
+            " variables", "internal_use");
 
     p.declare<std::string>("py_threadsafe",
-                "Name of Python boolean indicating if the cell is threadsafe",
-                "threadsafe");
+            "Name of Python boolean indicating if the cell is threadsafe",
+            "threadsafe");
 }
 
 void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& o)
@@ -73,6 +73,7 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
     internal_use = bp::extract<bp::list>(self.attr(
             p.get<std::string>("py_internal_use").c_str()));
 
+
     if(PyObject_HasAttrString(self.ptr(), "threadsafe"))
     {
         threadsafe_ = bp::extract<bool>(self.attr(
@@ -82,6 +83,9 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
 
     py_id = bp::object(++id_counter);
     self.attr("py_id") = py_id;
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" declare_io_inst"<<std::endl;
+#endif
 
     //declare each input socket to mirror underlying python dict
     bp::list ik = in.keys();
@@ -147,10 +151,16 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
 void Custom::declare_metadata(CellSockets &m)
 {
     metadata = &m;
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" declare_metadata"<<std::endl;
+#endif
 }
 
 void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSockets& o)
 {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" configure"<<std::endl;
+#endif
     AcquireGIL lock = AcquireGIL();
     //set all inputs
     bp::list ik = in.keys();
@@ -159,15 +169,32 @@ void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSoc
         std::string key = std::string(bp::extract<const char*>(ik[j]));
         (self.attr("inputs"))[key] = i.get<bp::object>(key);
     }
+
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "configure"))
     {
         self.attr("configure")();
     }
+
+    //set the default metadata values
+    if(PyObject_HasAttrString(self.ptr(), "return_msg_"))
+    {
+        return_msg_ = std::string(bp::extract<const char*>(
+                      self.attr("return_msg_")));
+        (*metadata)["return_msg"] << return_msg_;
+    }
+    if(PyObject_HasAttrString(self.ptr(), "return_code"))
+    {
+        int ret = bp::extract<int>(self.attr("return_code").attr("returncode"));
+        (*metadata)["status"] << static_cast<ReturnCode>(ret);
+    }
 }
 
 void Custom::start()
 {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" start"<<std::endl;
+#endif
     AcquireGIL lock = AcquireGIL();
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "start"))
@@ -178,6 +205,9 @@ void Custom::start()
 
 void Custom::stop()
 {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" stop"<<std::endl;
+#endif
     AcquireGIL lock = AcquireGIL();
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "stop"))
@@ -188,6 +218,9 @@ void Custom::stop()
 
 void Custom::activate()
 {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" activate"<<std::endl;
+#endif
     AcquireGIL lock = AcquireGIL();
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "activate"))
@@ -198,6 +231,9 @@ void Custom::activate()
 
 void Custom::deactivate()
 {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" deactivate"<<std::endl;
+#endif
     AcquireGIL lock = AcquireGIL();
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "deactivate"))
@@ -217,67 +253,91 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         std::string key = std::string(bp::extract<const char*>(ik[j]));
         (self.attr("inputs"))[key] = i.get<bp::object>(key);
     }
-
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" process"<<std::endl;
+#endif
     //run the underlying python process function
     if(PyObject_HasAttrString(self.ptr(), "process"))
     {
-        result = bp::extract<int>(self.attr("process")());
-
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" found process()"<<std::endl;
+#endif
+        try
+        {
+            result = bp::extract<int>(self.attr("process")());
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" called process()"<<std::endl;
+#endif
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" process success, result="<<result<<std::endl;
+#endif
+        }
+        catch(const std::exception& e)
+        {
+#if DEBUG_MODE > 0
+    std::cout<<metadata->get<std::string>("name")<<" process error="<<e.what()<<std::endl;
+#endif
+            //TODO: do not catch all.
+            result = static_cast<int>(UNKNOWN);
+        }
         if(PyObject_HasAttrString(self.ptr(), "return_msg_"))
         {
             return_msg_ = std::string(bp::extract<const char*>(
                           self.attr("return_msg_")));
             (*metadata)["return_msg"] << return_msg_;
         }
+        (*metadata)["status"] << static_cast<ReturnCode>(result);
+        if(PyObject_HasAttrString(self.ptr(), "return_code"))
+        {
+            int ret = bp::extract<int>(self.attr("return_code").attr("returncode"));
+            (*metadata)["status"] << static_cast<ReturnCode>(ret);
+        }
 
         //save results to outputs
-        bp::list ok = out.keys();
-        for(int k=0; k<len(ok); k++)
+        if(result>=static_cast<int>(OK))
         {
-            const char* key = bp::extract<const char*>(ok[k]);
-            bp::object val = out[key];
-            if(!val.is_none())
+            bp::list ok = out.keys();
+            for(int k=0; k<len(ok); k++)
             {
-                //creates a new token on socket
-                ReleaseGIL unlock = ReleaseGIL();
-                o[key] << val;
+                const char* key = bp::extract<const char*>(ok[k]);
+                bp::object val = out[key];
+                if(!val.is_none())
+                {
+                    //creates a new token on socket
+                    ReleaseGIL unlock = ReleaseGIL();
+                    o[key] << val;
+                }
+                else
+                {
+                    o[key]->get<bp::object>() = val;
+                }
             }
-            else
-            {
-                o[key]->get<bp::object>() = val;
-            }
-        }
 
-        //set the outflows according to python process() results
-        for(int k=0; k<len(outflow); k++)
-        {
-            const char* key = bp::extract<const char*>(outflow.keys()[k]);
-            int val = bp::extract<int>(outflow[key]);
-            if(val==static_cast<int>(OK))
+            //set the outflows according to python process() results
+            for(int k=0; k<len(outflow); k++)
             {
-                ReleaseGIL unlock = ReleaseGIL();
-                o[key] << static_cast<ReturnCode>(val);
-            }
-            else
-            {
-                o[key]->get<ReturnCode>() = static_cast<ReturnCode>(val);
+                const char* key = bp::extract<const char*>(outflow.keys()[k]);
+                int val = bp::extract<int>(outflow[key]);
+                if(val==static_cast<int>(OK))
+                {
+                    ReleaseGIL unlock = ReleaseGIL();
+                    o[key] << static_cast<ReturnCode>(val);
+                }
+                else
+                {
+                    o[key]->get<ReturnCode>() = static_cast<ReturnCode>(val);
+                }
             }
         }
     }
     else
     {
-        return_msg_ = "Unknown failure in process.";
+        return_msg_ = "This cell has no process() function!";
+        result = static_cast<int>(UNKNOWN);
     }
 
-    if(result==static_cast<int>(OK))
-    {
-        ReleaseGIL unlock = ReleaseGIL();
-        return static_cast<ReturnCode>(result);
-    }
-    else
-    {
-        return UNKNOWN;
-    }
+    ReleaseGIL unlock = ReleaseGIL();
+    return static_cast<ReturnCode>(result);
 }
 
 std::string Custom::return_msg() const

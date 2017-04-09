@@ -78,12 +78,32 @@ class Custom(object):
         else:
             return i is not None and not isinstance(i, dict)
 
-    def process(self):
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+    def process(self, code=None):
         """
         Manages the return value that gets passed back to the C++ scheduler.
         Always call this function at the end of your process implementation
         and return its value. Your process function should never need to
         return a value to the scheduler. This function will manage that for
         you.
+
+        :param code: You can pass a return code here which will get passed on
+                     to the scheduler.
+        :type code: :class:`~Quantum.QuReturnCode`
         """
-        return QuReturnCode('OK').returncode
+        try:
+            return code.returncode
+        except AttributeError:
+            return QuReturnCode('OK').returncode
+
+
+    def return_msg(self):
+        try:
+            return self.return_msg_
+        except:
+            return "No message available."
