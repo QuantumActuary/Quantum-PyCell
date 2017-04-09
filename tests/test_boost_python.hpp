@@ -10,13 +10,13 @@
 #ifndef TESTS_TEST_BOOST_PYTHON_HPP_
 #define TESTS_TEST_BOOST_PYTHON_HPP_
 
-#include <boost/python.hpp>
-#include <Engine/all.hpp>
-
-#include <gtest/gtest.h>
+#include "boost/python.hpp"
+#include "Engine/all.hpp"
+#include "gtest/gtest.h"
 
 namespace Quantum{
 namespace bp = boost::python;
+
 struct Boost
 {
     static void declare_io(const CellSockets& p, CellSockets& in, CellSockets& out)
@@ -38,8 +38,6 @@ struct Boost
 TEST(PyCell, Boost_Python)
 {
     cell_ptr m1 = std::shared_ptr<Cell>(new Cell_<Boost>());
-    m1->declare_params();
-    m1->declare_io();
     m1->process();
     EXPECT_TRUE(m1->outputs["a"]->get<std::string>() == "Hello");
 }

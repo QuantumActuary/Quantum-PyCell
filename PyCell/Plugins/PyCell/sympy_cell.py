@@ -22,11 +22,6 @@ registry += [
     'categories': ['Math', 'Symbolic']
     },
     {
-    'name': 'Exponentiate',
-    'module': 'PyCell.sympy_cell',
-    'categories': ['Math', 'Symbolic']
-    },
-    {
     'name': 'Exp',
     'module': 'PyCell.sympy_cell',
     'categories': ['Math', 'Symbolic']
@@ -65,6 +60,16 @@ registry += [
     'name': 'Normal',
     'module': 'PyCell.sympy_cell',
     'categories': ['Statistics', 'Symbolic']
+    },
+    {
+    'name': 'CDF',
+    'module': 'PyCell.sympy_cell',
+    'categories': ['Statistics', 'Symbolic']
+    },
+    {
+    'name': 'Calculate',
+    'module': 'PyCell.sympy_cell',
+    'categories': ['Math', 'Symbolic']
     }
     ]
 
@@ -72,41 +77,57 @@ tf = {'True':'True', 'False':'False'}
 OK = QuReturnCode('OK')
 QUIT = QuReturnCode('QUIT')
 
-def eval_sym(out_key=None, eval_key='eval', eval_out='result'):
+def eval_sym(out_key=None, in_key=None, eval_key='eval', eval_out='result'):
     """
     A decorator for processes that allow calculation of a numeric result. The
-    output socket located at ``out_key`` must be a :class:`QuSym`.
+    output socket located at ``out_key`` must be a :class:`QuSym`. Optionally,
+    an ``in_key`` may be supplied if the formula is found in an input. The
+    formula must be supplied in at least one of the two. If both are supplied,
+    the output formula will have priority.
     
     :param out_key: The key to the output socket containing a QuSym that
                     includes all values neccessary for evaluation.
     :type out_key: str
+    :param in_key: The key to the input socket containing a QuSym that
+                   includes all values neccessary for evaluation.
+    :type in_key: str
     :param eval_key: The input key containing a boolean which determines if
-                     a numeric result should be calculated
-    :type eval_key: str
+                     a numeric result should be calculated. Optionally, you can
+                     supply a boolean directly.
+    :type eval_key: str or bool
     :param eval_out: The output key where the numeric result is written
     :type eval_out: str
     """
-    assert isinstance(out_key, str)
-    assert isinstance(eval_key, str)
     def magic(process):
         def wrapper(self, *args, **kwargs):
-            _eval = self.inputs[eval_key]
-            process(self)
+            try:
+                _eval = self.inputs[eval_key]
+            except KeyError:
+                _eval = eval_key
+            ret = process(self)
             if _eval == True:
-                assert isinstance(self.outputs[out_key], QuSym)
-                _kwargs = self.outputs[out_key].to_dict()
+                fml = None
+                if out_key is not None:
+#                    assert isinstance(self.outputs[out_key], QuSym)
+                    fml = self.outputs[out_key]
+                else:
+#                    assert isinstance(self.inputs[in_key], QuSym)
+                    fml = self.inputs[in_key]
+                _kwargs = fml.to_dict()
                 vals = _kwargs['values']
                 try:
-                    _result = self.outputs[out_key].fn(*vals)
+                    _result = fml.fn(*vals)
                     self.outputs[eval_out] = _result
                 except TypeError as e:
                     self.return_msg_ = (
                         f'Unable to calculate result. '
                         f'Unacceptable parameter value in {vals}'
                         )
-                    self.return_code = QUIT
+                    ret = QUIT
+            return ret
         return wrapper
     return magic
+
 
 class QuSym(object):
     """
@@ -143,12 +164,78 @@ class QuSym(object):
         newvars = tuple([i[0] for i in newtups])
         newvals = tuple([i[1] for i in newtups])
         return {'variables': newvars, 'values': newvals}
+ 
+    def _op(self, expr, other):
+        _kwargs = self.to_dict()
+        try:
+            _kwargs = self._combine_params(other)
+        except AttributeError:
+            pass
+        return QuSym(expr, **_kwargs)
     
     def __add__(self, other):
-        assert isinstance(other, QuSym)
-        newsym = self.expression + other.expression
-        _kwargs = self._combine_params(other)
-        return QuSym(newsym, **_kwargs)
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression + val, other)
+    
+    def __sub__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression - val, other)
+    
+    def __mul__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression * val, other)
+    
+    def __matmul__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression @ val, other)
+    
+    def __truediv__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression / val, other)
+    
+    def __floordiv__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression // val, other)
+    
+    def __mod__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression % val, other)
+    
+    def __pow__(self, other):
+        val = None
+        try:
+            val = other.expression
+        except AttributeError:
+            val = other
+        return self._op(self.expression ** val, other)
 
     @property
     def fn(self):
@@ -171,6 +258,9 @@ class QuSym(object):
     @property
     def expression(self):
         return self._expression
+    
+    def __str__(self):
+        return str(self.expression)
 
 
 class Subs(Custom):
@@ -191,17 +281,11 @@ class Subs(Custom):
     threadsafe = True
     
     def __init__(self):
-        self.return_code = OK
         self.return_msg_ = "Ready to go!"
     
-    def start(self):
-        self.return_code = OK
-    
-    @eval_sym(out_key='f(x)')
-    def _process(self):
-        pass
-            
+    @eval_sym(out_key='f(x)')        
     def process(self):
+        ret = OK
         try:
             self.outputs['f(x)'] = self.inputs['f(x)'].subs(
                 self.inputs['subexpr'], self.inputs['replacement']
@@ -211,17 +295,25 @@ class Subs(Custom):
                 self.return_msg_ = "Input f(x) must be a QuSym object!"
             else:
                 self.return_msg_ = "I don't know what went wrong!"
-            self.return_code = QUIT
-        self._process()
-        return super().process(self.return_code)
+            ret = QUIT
+        return super().process(code=ret)
 
 class Differentiate(Custom):
-    inputs = {'f(x)': None, 'dx': None, 'eval': tf}
-    outputs = {'df/dx': None}
-    required = ['f(x)', 'dx']
-
+    inputs = {'f(x)': None, 'x': None, 'eval': tf}
+    outputs = {'df/dx': None, 'result': None}
+    required = ['f(x)', 'x']
+    threadsafe = True
+    
+    @eval_sym(out_key='df/dx')
     def process(self):
-        self.outputs['df/dx'] = diff(self.inputs['f(x)'], self.inputs['dx'])
+#        assert isinstance(self.inputs['f(x)'], QuSym)
+#        assert isinstance(self.inputs['x'], QuSym)
+        
+        dfdx = diff(
+            self.inputs['f(x)'].expression, self.inputs['x'].expression
+            )
+        _kwargs = self.inputs['f(x)']._combine_params(self.inputs['x'])
+        self.outputs['df/dx'] = QuSym(dfdx, **_kwargs)
         return super().process()
 
 
@@ -230,9 +322,6 @@ class Integrate(Custom):
               'upper limit': oo}
     outputs = {'F(x)': None}
     required = ['f(x)', 'dx']
-
-    def start(self):
-        self.return_code = OK
     
     def process(self):
         self.outputs['F(x)'] = integrate(self.inputs['f(x)'],
@@ -255,9 +344,6 @@ class Symbol(Custom):
     outputs = {'symbol': None}
     required = ['name']
     threadsafe = True
-
-    def start(self):
-        self.return_code = OK
     
     def process(self):
         self.outputs['symbol'] = QuSym(self.inputs['name'],
@@ -276,9 +362,6 @@ class SymFunction(Custom):
     outputs = {'symbol': None}
     required = ['name']
     threadsafe = True
-
-    def __init__(self):
-        self.return_code = OK
     
     def process(self):
         self.outputs['symbol'] = sp.Function(self.inputs['name'])
@@ -300,9 +383,6 @@ class Normal(Custom):
     required = ['name', 'mean', 'variance']
     threadsafe = True
     # TODO: Allow default values
-
-    def start(self):
-        self.return_code = OK
     
     def process(self):
         self.outputs['normal'] = stats.Normal(
@@ -319,43 +399,15 @@ class CDF(Custom):
     required = ['distribution']
     threadsafe = True
     
-    def start(self):
-        self.return_code = OK
-    
-    def _process(self):
-        pass
-    
+    @eval_sym(out_key='CDF', eval_key='eval', eval_out='result')
     def process(self):
-        pass
-
-class Exponentiate(Custom):
-    """
-    Exponentiate base by exp. i.e. :math:`x^y` where :math:`x` is the base and
-    :math:`y` is the exponent.
-    """
-    inputs = {'base': None, 'exp': None, 'eval': tf}
-    outputs = {'f(x)': None, 'result': None}
-    required = ['base', 'exp', 'eval']
-    threadsafe = True
-        
-    def start(self):
-        self.return_msg_ = "Nothing to report!"
-        self.return_code = OK
-
-    @eval_sym(out_key='f(x)', eval_key='eval', eval_out='result')
-    def _process(self):
-        base = self.inputs['base'].expression
-        exp = self.inputs['exp'].expression
-        try:
-            _kwargs = self.inputs['base']._combine_params(self.inputs['exp'])
-            outSym = base ** exp
-            self.outputs['f(x)'] = QuSym(outSym, **_kwargs)
-        except TypeError:
-            self.return_msg_ = f'Could not exponentiate {base} by {exp}.'
-            self.return_code = QUIT
-        
-    def process(self):
-        self._process()
+        assert isinstance(self.inputs['distribution'],
+                          sp.stats.rv.RandomSymbol)
+        assert isinstance(self.inputs['z'], QuSym)
+        dist = stats.cdf(self.inputs['distribution'])
+        expr = dist(self.inputs['z'].expression)
+        _kwargs = self.inputs['z'].to_dict()
+        self.outputs['CDF'] = QuSym(expr, **_kwargs)
         return super().process()
 
 
@@ -373,21 +425,14 @@ class Exp(Custom):
     threadsafe = True
     
     def start(self):
-        self.return_code = OK
         self.return_msg_ = "Nothing to report!"
         
     @eval_sym(out_key='f(x)', eval_key='eval', eval_out='result')
-    def _process(self):
+    def process(self):
         _kwargs = self.inputs['x'].to_dict()
         outSym = sp.exp(self.inputs['x'].expression)
         self.outputs['f(x)'] = QuSym(outSym, **_kwargs)
-    
-    def process(self):
-        self._process()
-        return super().process(self.return_code)
-        
-    def return_msg(self):
-        return self.return_msg_
+        return super().process()
     
 class Ln(Custom):
     """Natural log :math:`ln(x)`
@@ -407,14 +452,11 @@ class Ln(Custom):
         self.return_msg_ = "Nothing to report!"
         
     @eval_sym(out_key='f(x)', eval_key='eval', eval_out='result')
-    def _process(self):
+    def process(self):
         _kwargs = self.inputs['x'].to_dict()
         outSym = sp.ln(self.inputs['x'].expression)
         self.outputs['f(x)'] = QuSym(outSym, **_kwargs)
-    
-    def process(self):
-        self._process()
-        return super().process(self.return_code)
+        return super().process()
     
 class Sqrt(Custom):
     """Square root :math:`\sqrt{x}`
@@ -434,15 +476,26 @@ class Sqrt(Custom):
         self.return_msg_ = "Nothing to report!"
         
     @eval_sym(out_key='f(x)', eval_key='eval', eval_out='result')
-    def _process(self):
+    def process(self):
         _kwargs = self.inputs['x'].to_dict()
         outSym = sp.sqrt(self.inputs['x'].expression)
         self.outputs['f(x)'] = QuSym(outSym, **_kwargs)
-    
-    def process(self):
-        self._process()
-        return super().process(self.return_code)
+        return super().process()
 
+
+class Calculate(Custom):
+    """
+    Converts a QuSym into a function and calculates the value given supplied
+    input variables.
+    """
+    inputs = {'f(x)': None}
+    outputs = {'result': None}
+    required = ['f(x)']
+    threadsafe = False
+    
+    @eval_sym(in_key='f(x)', eval_key=True)
+    def process(self):
+        return super().process()
 
 class Expand(Custom):
     """Expands the input formula

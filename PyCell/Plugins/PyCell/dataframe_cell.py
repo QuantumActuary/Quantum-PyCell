@@ -134,6 +134,16 @@ registry += [
     'name': 'Update',
     'module': 'PyCell.dataframe_cell',
     'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Iloc',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
+    },
+    {
+    'name': 'Loc',
+    'module': 'PyCell.dataframe_cell',
+    'categories': ['Data', 'Modify']
     }
     ]
 
@@ -460,6 +470,74 @@ class Read_CSV(Custom):
         return super().process()
 
 
+class Iloc(Custom):
+    """
+    Create a dataframe subset using the `iloc` function.
+
+    :param axis0: Rows to return by position
+    :type axis0: int, list of int, slice
+    :param axis1: Columns to return by position
+    :type axis1: int, list of int, slice
+    :param data: *Required*. The source data.
+    :type data: H5
+    :returns: The requested rows and columns.
+    :rtype: H5
+    """
+    required = ['data']
+
+    def __init__(self):
+        self.return_msg_ = 'I\'m ready!'
+        self.inputs = {'axis0': None, 'axis1': None, 'data': None}
+        self.outputs = {'dataframe': None}
+
+    @data_process
+    def iloc(self, h5):
+        df = None
+        if self.inputs['axis1'] is None:
+            df = h5.df.iloc[self.inputs['axis0']]
+        else:
+            df = h5.df.iloc[self.inputs['axis0'], self.inputs['axis1']]
+        return df
+
+    def process(self):
+        self.outputs['dataframe'] = self.iloc(self.inputs['data'])
+        return super().process()
+
+
+class Loc(Custom):
+    """
+    Create a dataframe subset using the `loc` function.
+
+    :param axis0: Rows to return by label
+    :type axis0: label, list of labels
+    :param axis1: Columns to return by label
+    :type axis1: label, list of labels
+    :param data: *Required*. The source data.
+    :type data: H5
+    :returns: The requested rows and columns.
+    :rtype: H5
+    """
+    required = ['data']
+
+    def __init__(self):
+        self.return_msg_ = 'I\'m ready!'
+        self.inputs = {'axis0': None, 'axis1': None, 'data': None}
+        self.outputs = {'dataframe': None}
+
+    @data_process
+    def loc(self, h5):
+        df = None
+        if self.inputs['axis1'] is None:
+            df = h5.df.loc[self.inputs['axis0']]
+        else:
+            df = h5.df.loc[self.inputs['axis0'], self.inputs['axis1']]
+        return df
+
+    def process(self):
+        self.outputs['dataframe'] = self.loc(self.inputs['data'])
+        return super().process()
+
+
 class Head(Custom):
     """
     Creates a new dataframe from the first few rows of the input DataFrame.
@@ -481,9 +559,12 @@ class Head(Custom):
     @data_process
     def head(self, h5):
         # select start and stop params dont work for series for some reason.
-        df = h5.select(start=0, stop=self.inputs['n'])
+        stop = self.inputs['n']
+        if stop is None:
+            stop = 5
+        df = h5.select(start=0, stop=stop)
         # calling head on df because df might be a series.
-        return df.head(self.inputs['n'])
+        return df.head(stop)
 
     def process(self):
         self.outputs['dataframe'] = self.head(self.inputs['data'])

@@ -28,16 +28,18 @@ class Sleep(Custom):
     outflows = {'>>': QuReturnCode('UNKNOWN').returncode}
     required = ['>>', 'seconds']
     internal_use = ['>>']
+    threadsafe = True
 
-    def __init__(self):
+    def start(self):
         self.return_msg_ = "Everything looks good!"
+        self.return_code = QuReturnCode('OK')
 
     def process(self):
         time.sleep(self.inputs['seconds'])
         print("I have awakened!")
         self.outputs['done'] = True
         self.outflows['>>'] = QuReturnCode('OK').returncode
-        return super().process()
+        return super().process(self.return_code)
 
     def return_msg(self):
         return self.return_msg_
@@ -52,26 +54,26 @@ class Print(Custom):
     always_reprocess = True
     threadsafe = True
 
-    def __init__(self):
+    def start(self):
         self.return_msg_ = "Ready... to print money!"
+        self.return_code = QuReturnCode('OK')
 
     def process(self):
         try:
             print(self.inputs['msg'])
-            self.outflows['>>'] = QuReturnCode('OK').returncode
             self.return_msg_ = 'Print execution done.'
         except:
-            self.outflows['>>'] = QuReturnCode('UNKNOWN').returncode
+            self.return_code = QuReturnCode('UNKNOWN')
             self.return_msg_ = 'Problem printing!'
-        return super().process()
 
-    def return_msg(self):
-        return self.return_msg_
+        self.outflows['>>'] = self.return_code.returncode
+        return super().process(self.return_code)
 
 
 class Start(Custom):
     outflows = {'>>': QuReturnCode('OK').returncode}
+    threadsafe = True
 
     def process(self):
         self.outflows['>>'] = QuReturnCode('OK').returncode
-        return super().process()
+        return super().process(code=QuReturnCode('OK'))

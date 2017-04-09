@@ -19,7 +19,7 @@ registry += [
     'categories': ['Operators', 'Algebraic']
     },
     {
-    'name': 'Subtract',
+    'name': 'Sub',
     'module': 'PyCell.pylang_cell',
     'categories': ['Operators', 'Algebraic']
     },
@@ -47,6 +47,11 @@ registry += [
     'name': 'Len',
     'module': 'PyCell.pylang_cell',
     'categories': ['Utility']
+    },
+    {
+    'name': 'Pow',
+    'module': 'PyCell.pylang_cell',
+    'categories': ['Operators', 'Algebraic']
     }
     ]
 
@@ -128,71 +133,40 @@ class Add(Custom):
 
     :param a: *Required*. Left operand.
     :param b: *Required*. Right operand.
-    :param type: Indicates the type of operation, whether it should add using
-                 default python behavior or add symbolically.
     :returns: The result of ``a+b``.
     """
-    inputs = {'type': {'Symbolic': 'Symbolic', 'Default': 'Default'},
-              'a': None, 'b': None}
+    inputs = {'a': None, 'b': None}
     outputs = {'result': None}
     required = ['a', 'b']
-
-    def __init__(self):
-        self.return_msg_ = 'Ready to add stuff.'
-
-    def configure(self):
-        self.type = 'Default'
-        if self.inputs['type'] is None or self.inputs['type'] == '':
-            self.type = 'Default'
-        else:
-            self.type = self.inputs['type']
-
-        if self.type == 'Symbolic':
-#             from symengine import var
-            from sympy import var
-            for k in self.required:
-                if isinstance(self.inputs[k], str):
-                    self.inputs[k] = var(self.inputs[k])
+    threadsafe = True
 
     def process(self):
-        self.outputs['result'] = self.inputs['a'] + self.inputs['b']
+        try:
+            self.outputs['result'] = self.inputs['a'] + self.inputs['b']
+        except TypeError:
+            self.outputs['result'] = self.inputs['b'] + self.inputs['a']
         self.return_msg_ = 'I added a and b.'
         return super().process()
 
 
-class Subtract(Custom):
+class Sub(Custom):
     """
     Adds two objects.
 
     :param a: *Required*. Left operand.
     :param b: *Required*. Right operand.
-    :param type: Indicates the type of operation, whether it should add using
-                 default python behavior or add symbolically.
     :returns: The result of ``a-b``.
     """
-    inputs = {'type': {'Symbolic': 'Symbolic', 'Default': 'Default'},
-              'a': None, 'b': None}
+    inputs = {'a': None, 'b': None}
     outputs = {'result': None}
     required = ['a', 'b']
-
-    def __init__(self):
-        self.return_msg_ = 'Ready to subtract stuff.'
-
-    def configure(self):
-        self.type = 'Default'
-        if self.inputs['type'] is None or self.inputs['type'] == '':
-            self.type = 'Default'
-        else:
-            self.type = self.inputs['type']
-
-        if self.type == 'Symbolic':
-            from symengine import var
-            for k in self.required:
-                if isinstance(self.inputs[k], str):
-                    self.inputs[k] = var(self.inputs[k])
+    threadsafe = True
 
     def process(self):
-        self.outputs['result'] = self.inputs['a'] - self.inputs['b']
+        try:
+            self.outputs['result'] = self.inputs['a'] - self.inputs['b']
+        except TypeError:
+            self.outputs['result'] = (self.inputs['b'] - self.inputs['a']) * (-1)
         self.return_msg_ = 'I subtracted b from a.'
         return super().process()
 
@@ -203,33 +177,18 @@ class Mul(Custom):
 
     :param a: *Required*. Left operand.
     :param b: *Required*. Right operand.
-    :param type: Indicates the type of operation, whether it should multiply
-                 using default python behavior or add symbolically.
     :returns: The result of ``a*b``.
     """
-    inputs = {'type': {'Symbolic': 'Symbolic', 'Default': 'Default'},
-              'a': None, 'b': None}
+    inputs = {'a': None, 'b': None}
     outputs = {'result': None}
     required = ['a', 'b']
-
-    def __init__(self):
-        self.return_msg_ = 'Ready to multiply stuff.'
-
-    def configure(self):
-        self.type = 'Default'
-        if self.inputs['type'] is None or self.inputs['type'] == '':
-            self.type = 'Default'
-        else:
-            self.type = self.inputs['type']
-
-        if self.type == 'Symbolic':
-            from symengine import var
-            for k in self.required:
-                if isinstance(self.inputs[k], str):
-                    self.inputs[k] = var(self.inputs[k])
+    threadsafe = True
 
     def process(self):
-        self.outputs['result'] = self.inputs['a'] * self.inputs['b']
+        try:
+            self.outputs['result'] = self.inputs['a'] * self.inputs['b']
+        except TypeError:
+            self.outputs['result'] = self.inputs['b'] * self.inputs['a']
         self.return_msg_ = 'I mulitplied a and b.'
         return super().process()
 
@@ -240,33 +199,18 @@ class Div(Custom):
 
     :param a: *Required*. Left operand.
     :param b: *Required*. Right operand.
-    :param type: Indicates the type of operation, whether it should divide
-                 using default python behavior or add symbolically.
     :returns: The result of ``a/b``.
     """
-    inputs = {'type': {'Symbolic': 'Symbolic', 'Default': 'Default'},
-              'a': None, 'b': None}
+    inputs = {'a': None, 'b': None}
     outputs = {'result': None}
     required = ['a', 'b']
-
-    def __init__(self):
-        self.return_msg_ = 'Ready to divide stuff.'
-
-    def configure(self):
-        self.type = 'Default'
-        if self.inputs['type'] is None or self.inputs['type'] == '':
-            self.type = 'Default'
-        else:
-            self.type = self.inputs['type']
-
-        if self.type == 'Symbolic':
-            from symengine import var
-            for k in self.required:
-                if isinstance(self.inputs[k], str):
-                    self.inputs[k] = var(self.inputs[k])
+    threadsafe = True
 
     def process(self):
-        self.outputs['result'] = self.inputs['a'] / self.inputs['b']
+        try:
+            self.outputs['result'] = self.inputs['a'] / self.inputs['b']
+        except TypeError:
+            self.outputs['result'] = (self.inputs['b'] / self.inputs['a']) ** (-1)
         self.return_msg_ = 'I divided a by b.'
         return super().process()
 
@@ -282,11 +226,27 @@ class Int_Div(Custom):
     inputs = {'a': None, 'b': None}
     outputs = {'result': None}
     required = ['a', 'b']
-
-    def __init__(self):
-        self.return_msg_ = 'Ready to integer divide stuff.'
+    threadsafe = True
 
     def process(self):
         self.outputs['result'] = self.inputs['a'] // self.inputs['b']
         self.return_msg_ = 'I integer divided a and b.'
+        return super().process()
+
+class Pow(Custom):
+    """
+    Exponentiates a base by a power. Equivalent to the ``**`` operator.
+
+    :param a: Left operand.
+    :param b: Right operand.
+    :returns: The result of ``a**b``.
+    """
+    inputs = {'a': None, 'b': None}
+    outputs = {'result': None}
+    required = ['a', 'b']
+    threadsafe = True
+
+    def process(self):
+        self.outputs['result'] = self.inputs['a'] ** self.inputs['b']
+        self.return_msg_ = 'I exponentiated a by b.'
         return super().process()
