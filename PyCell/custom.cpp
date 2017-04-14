@@ -280,6 +280,14 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
             //TODO: do not catch all.
             result = static_cast<int>(UNKNOWN);
         }
+        catch(const bp::error_already_set&)
+        {
+            //https://misspent.wordpress.com/2009/10/11/boost-python-and-handling-python-exceptions/
+            PyObject *e, *v, *t;
+            PyErr_Fetch(&e, &v, &t);
+            PyErr_Restore(e, v, t);
+            PyRun_SimpleString("raise");
+        }
         if(PyObject_HasAttrString(self.ptr(), "return_msg_"))
         {
             return_msg_ = std::string(bp::extract<const char*>(
