@@ -16,6 +16,15 @@ namespace PyCell{
 
 std::atomic<int> Custom::id_counter{0};
 
+void Custom::pass()
+{
+    //https://misspent.wordpress.com/2009/10/11/boost-python-and-handling-python-exceptions/
+    PyObject *e, *v, *t;
+    PyErr_Fetch(&e, &v, &t);
+    PyErr_Restore(e, v, t);
+    PyRun_SimpleString("raise");
+}
+
 void Custom::declare_params(CellSockets &p)
 {
     p.declare<std::string>("py_import", "Module import name.", "PyCell");
@@ -227,15 +236,6 @@ void Custom::activate()
     {
         self.attr("activate")();
     }
-}
-
-void Custom::pass()
-{
-    //https://misspent.wordpress.com/2009/10/11/boost-python-and-handling-python-exceptions/
-    PyObject *e, *v, *t;
-    PyErr_Fetch(&e, &v, &t);
-    PyErr_Restore(e, v, t);
-    PyRun_SimpleString("raise");
 }
 
 void Custom::deactivate()

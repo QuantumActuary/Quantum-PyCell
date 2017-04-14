@@ -5,7 +5,9 @@ Dataframe
 Provides Pandas DataFrame functions.
 """
 import Quantum
+from Quantum import QuReturnCode
 import os
+import sys
 import pandas as pd
 from PyCell import registry
 from PyCell.custom_cell import Custom
@@ -18,17 +20,17 @@ registry += [
     {
     'name': 'Read_CSV',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Import']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Head',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Tail',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Sort_Values',
@@ -38,7 +40,7 @@ registry += [
     {
     'name': 'Column',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'IsNull',
@@ -53,7 +55,7 @@ registry += [
     {
     'name': 'Select',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Sort_Index',
@@ -133,17 +135,17 @@ registry += [
     {
     'name': 'Update',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Iloc',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     },
     {
     'name': 'Loc',
     'module': 'PyCell.dataframe_cell',
-    'categories': ['Data', 'Modify']
+    'categories': ['Data', 'Query']
     }
     ]
 
@@ -158,6 +160,10 @@ def data_process(func):
     generator. This result is then wrapped back up into an H5 and returned,
     where it is expected to be put into an output socket for the next cell to
     use.
+
+    .. note::
+       This decorator runs the decorated function in a separate processor and
+       therefore, will not emit any print statements.
     """
     def process_func(*args, **kwargs):
         assert isinstance(args[0], Custom), 'args[0] must be self'
@@ -181,7 +187,7 @@ def data_process(func):
         largs = (child_conn, file, node, func, *args)
         p = Process(target=multi_process, args=largs, kwargs=kwargs)
         p.start()
-        p.join()
+        p.join(10)
         if parent_conn.recv():
             new_h5 = H5(file, node)
         else:
@@ -293,7 +299,6 @@ class H5(object):
             dc = storer.data_columns
         return dc
 
-    @exception_raiser
     def select(self, *args, **kwargs):
         """
         Executes a select operation on the hdf5 object.
@@ -302,7 +307,6 @@ class H5(object):
                           *args, key=self.node, **kwargs)
         return sel
 
-    @exception_raiser
     def select_column(self, *args, **kwargs):
         """
         Grabs a series from the store.
@@ -433,7 +437,6 @@ class Read_CSV(Custom):
                        'data_columns': []}
         self.outputs = {'dataframe': None}
 
-    @exception_raiser
     def read_csv(self):
         kwargs = {}
         if not self.inputs['index_col'] == '':
@@ -654,11 +657,11 @@ class Column(Custom):
               is a single string, the result will be a series.
     """
     required = ['data', 'columns']
+    inputs = {'data': None, 'columns': []}
+    outputs = {'data': None}
 
     def __init__(self):
         self.return_msg_ = 'Ready to select columns!'
-        self.inputs = {'data': None, 'columns': []}
-        self.outputs = {'data': None}
 
     @data_process
     def column(self, h5):
@@ -669,13 +672,14 @@ class Column(Custom):
             else:
                 df = h5.select(columns=cols)
         except:
-            df = h5.df[cols]
+            df = h5.df.loc[:, cols]
         return df
 
     def process(self):
+        self.return_msg_ = 'Selecting column...'
         self.outputs['data'] = self.column(self.inputs['data'])
         self.return_msg_ = 'Selected'
-        return super().process()
+        return super().process(QuReturnCode('OK'))
 
 
 class IsNull(Custom):
@@ -1343,6 +1347,9 @@ class Update(Custom):
     :type dataframe: DataFrame
     :param column: *Required*. The dataframe column that recieves the updates.
     :type column: string
+    :param rows: A series of True and False that determines which rows get
+                 updates.
+    :type rows: Series
     :param values: *Required*. The values to write into the dataframe. The
                    row index should correspond to the row index of the
                    dataframe.
@@ -1350,21 +1357,31 @@ class Update(Custom):
     :returns: The updated data.
     :rtype: H5
     """
-    required = ['dataframe', 'column', 'values']
+    inputs = {'data': None, 'rows': None, 'column': None, 'values': None}
+    outputs = {'data': None}
+    required = ['data', 'column', 'values']
 
     def __init__(self):
         self.return_msg_ = "Ready to update data."
-        self.inputs = {'dataframe': None, 'column': None, 'values': None}
-        self.outputs = {'dataframe': None}
 
     @data_process
     def update(self, h5):
-        assert isinstance(self.inputs['values'], H5), "Socket must be an H5."
+        assert isinstance(self.inputs['data'], H5), \
+            "dataframe must be an H5."
         df = h5.df
-        df[self.inputs['column']] = self.inputs['values'].df
+        if self.inputs['rows'] == '':
+            df.loc[:, self.inputs['column']] = self.inputs['values'].df
+        else:
+            assert isinstance(self.inputs['rows'].df, pd.Series), \
+                "rows must be a Series."
+            df.loc[self.inputs['rows'].df, self.inputs['column']] = \
+                self.inputs['values'].df
         return df
 
     def process(self):
-        self.outputs['dataframe'] = self.update(self.inputs['dataframe'])
+        self.outputs['data'] = self.update(self.inputs['data'])
         self.return_msg_ = 'Data updated!'
-        return super().process()
+        if isinstance(self.outputs['data'], H5):
+            return super().process(QuReturnCode('OK'))
+        else:
+            return super().process(QuReturnCode('UNKNOWN'))
