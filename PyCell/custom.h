@@ -34,6 +34,7 @@ private:
     bp::object py_id;
     static std::atomic<int> id_counter;
     CellSockets *metadata;
+    void pass();
 public:
     static void declare_params(CellSockets&);
     void declare_io_inst(const CellSockets&, CellSockets&, CellSockets&);

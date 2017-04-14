@@ -229,6 +229,15 @@ void Custom::activate()
     }
 }
 
+void Custom::pass()
+{
+    //https://misspent.wordpress.com/2009/10/11/boost-python-and-handling-python-exceptions/
+    PyObject *e, *v, *t;
+    PyErr_Fetch(&e, &v, &t);
+    PyErr_Restore(e, v, t);
+    PyRun_SimpleString("raise");
+}
+
 void Custom::deactivate()
 {
 #if DEBUG_MODE > 0
@@ -282,11 +291,7 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         }
         catch(const bp::error_already_set&)
         {
-            //https://misspent.wordpress.com/2009/10/11/boost-python-and-handling-python-exceptions/
-            PyObject *e, *v, *t;
-            PyErr_Fetch(&e, &v, &t);
-            PyErr_Restore(e, v, t);
-            PyRun_SimpleString("raise");
+            pass();
         }
         if(PyObject_HasAttrString(self.ptr(), "return_msg_"))
         {
