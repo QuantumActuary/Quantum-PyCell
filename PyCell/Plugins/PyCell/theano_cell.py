@@ -5,7 +5,7 @@ Theano Plugin
 This plugin provides cells to work with theano.
 """
 import numpy
-from theano import (function, tensor as T)
+#from theano import (function, tensor as T)
 from PyCell import registry
 from PyCell.custom_cell import Custom
 

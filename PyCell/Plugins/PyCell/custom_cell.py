@@ -3,6 +3,20 @@ Custom Cell
 ===========
 
 Provides prototype cell from which all other cells should derive.
+
+.. tip::
+   For writing your own cells, those that are run in a separate process will
+   not emit any print statements. Cells that are threadsafe and set to always
+   reprocess will run in the main process and will thus print to your console.
+   Running a circuit with debug turned on will force all cells to run in a
+   single thread and therefore all cells will be able to print to the console
+   in this mode.
+
+   To run your circuit in debug, you can type the following in your console::
+
+       >>> run(debug=True, step=1)
+
+   You can increase the step size to run multiple cells.
 """
 from Quantum import QuReturnCode
 from traceback_formatter import pprint_tb
@@ -10,6 +24,10 @@ import sys
 
 
 def exception_raiser(func):
+    """
+    Use this decorator on functions that need to raise exceptions and display
+    them in Quantum's console.
+    """
     def exec_func(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -42,10 +60,15 @@ class Custom(object):
     :type outflows: dict
     :param required: A list of required sockets by name.
     :type required: list
-    :param always_preprocess: Determines if a cell should always re-process
-                              on a subsequent call even if none of the inputs
-                              have changed. Default, False.
-    :type always_preprocess: boolean
+    :param threadsafe: Determines if a cell will run in a separate thread or
+                       separate process. If threadsafe, PyCell will attempt to
+                       run the cell in a thread, otherwise, it will spawn a
+                       separate process just to run the cell.
+    :type threadsafe: boolean
+    :param always_reprocess: Determines if a cell should always re-process
+                             on a subsequent call even if none of the inputs
+                             have changed. Default, False.
+    :type always_reprocess: boolean
     """
     inputs = {}
     outputs = {}

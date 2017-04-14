@@ -66,8 +66,8 @@ class Print(Custom):
             self.return_code = QuReturnCode('UNKNOWN')
             self.return_msg_ = 'Problem printing!'
 
-        self.outflows['>>'] = self.return_code.returncode
-        return super().process(self.return_code)
+        self.outflows['>>'] = QuReturnCode('OK').returncode
+        return super().process(QuReturnCode('OK'))
 
 
 class Start(Custom):
