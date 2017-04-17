@@ -182,7 +182,14 @@ void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSoc
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "configure"))
     {
-        self.attr("configure")();
+        try
+        {
+            self.attr("configure")();
+        }
+        catch(const bp::error_already_set&)
+        {
+            pass();
+        }
     }
 
     //set the default metadata values
@@ -221,7 +228,14 @@ void Custom::stop()
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "stop"))
     {
-        self.attr("stop")();
+        try
+        {
+            self.attr("stop")();
+        }
+        catch(const bp::error_already_set&)
+        {
+            pass();
+        }
     }
 }
 
@@ -234,7 +248,14 @@ void Custom::activate()
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "activate"))
     {
-        self.attr("activate")();
+        try
+        {
+            self.attr("activate")();
+        }
+        catch(const bp::error_already_set&)
+        {
+            pass();
+        }
     }
 }
 
@@ -247,7 +268,14 @@ void Custom::deactivate()
     //run the underlying python configure function
     if(PyObject_HasAttrString(self.ptr(), "deactivate"))
     {
-        self.attr("deactivate")();
+        try
+        {
+            self.attr("deactivate")();
+        }
+        catch(const bp::error_already_set&)
+        {
+            pass();
+        }
     }
 }
 
@@ -292,6 +320,7 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
         catch(const bp::error_already_set&)
         {
             pass();
+            result = static_cast<int>(UNKNOWN);
         }
         if(PyObject_HasAttrString(self.ptr(), "return_msg_"))
         {
