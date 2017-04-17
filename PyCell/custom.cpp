@@ -299,12 +299,6 @@ ReturnCode Custom::process(const CellSockets& i, const CellSockets& o)
                           self.attr("return_msg_")));
             (*metadata)["return_msg"] << return_msg_;
         }
-        (*metadata)["status"] << static_cast<ReturnCode>(result);
-        if(PyObject_HasAttrString(self.ptr(), "return_code"))
-        {
-            int ret = bp::extract<int>(self.attr("return_code").attr("returncode"));
-            (*metadata)["status"] << static_cast<ReturnCode>(ret);
-        }
 
         //save results to outputs
         if(result>=static_cast<int>(OK))
