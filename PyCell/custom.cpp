@@ -89,6 +89,7 @@ void Custom::declare_io_inst(const CellSockets& p, CellSockets& i, CellSockets& 
                 p.get<std::string>("py_threadsafe").c_str()));
         (*metadata)["threadsafe"] << threadsafe_;
     }
+    (*metadata)["self"] << self;
 
     py_id = bp::object(++id_counter);
     self.attr("py_id") = py_id;
@@ -163,6 +164,8 @@ void Custom::declare_metadata(CellSockets &m)
 #if DEBUG_MODE > 0
     std::cout<<metadata->get<std::string>("name")<<" declare_metadata"<<std::endl;
 #endif
+    AcquireGIL lock = AcquireGIL();
+    m.declare<bp::object>("self", "Python object", self);
 }
 
 void Custom::configure(const CellSockets& p, const CellSockets& i, const CellSockets& o)
