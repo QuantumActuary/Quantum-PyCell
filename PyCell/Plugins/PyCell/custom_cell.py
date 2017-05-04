@@ -18,9 +18,10 @@ Provides prototype cell from which all other cells should derive.
 
    You can increase the step size to run multiple cells.
 """
-from Quantum import QuReturnCode
+from Quantum import QuReturnCode, QuCellSocket
 from traceback_formatter import pprint_tb
 import sys
+import copy
 
 
 def exception_raiser(func):
@@ -81,25 +82,13 @@ class Custom(object):
 
     def __init__(self):
         self.py_id = 0  # value generated in c++
-
-    def is_valid_input(self, i, allow_none=False, allow_dict=False, **kwargs):
-        """
-        Checks whether or not an input has a value. This may be useful for
-        determining if a key word argument should be appended prior to a
-        function call.
-
-        :param i: The input socket.
-        :type i: object
-        :param allow_none: Determines if ``None`` counts as a valid value.
-                           Default, False
-        :type allow_none: boolean
-        """
-        if allow_none or isinstance(i, str):
-            return not i == ''
-        elif allow_dict:
-            return i is not None
-        else:
-            return i is not None and not isinstance(i, dict)
+        self.inputs = {k:v for k, v in self.__class__.inputs.items()}
+        if isinstance(self.__class__.inputs, ValidInputs):
+            self.inputs = copy.deepcopy(self.__class__.inputs)
+            self.inputs = ValidInputs(self.inputs)
+        self.outputs = {k:v for k, v in self.__class__.outputs.items()}
+        self.inflows = [v for v in self.__class__.inflows]
+        self.outflows = {k:v for k, v in self.__class__.outflows.items()}
 
     def start(self):
         pass
@@ -130,3 +119,91 @@ class Custom(object):
             return self.return_msg_
         except:
             return "No message available."
+
+class ValidInputs(dict):
+    """
+    A special dict that assumes all values are `QuCellSocket`. `QuCellSocket`s
+    can contain validation functions that determine what happens when a client
+    tries to store a value in the socket. `ValidInputs` helps to manage a dict
+    of these sockets and prevents the `QuCellSocket` from being overwritten by
+    a primitive type. This preserves any validation functions that may have
+    been registered with the sockets.
+
+    Examples:
+    inputs = ValidInputs(my_socket=QuCellSocket(1.234))
+    inputs = ValidInputs(a=QuCellSocket('a_value'), b=QuCellSocket('b_value'))
+    inputs = ValidInputs({'c':QuCellSocket(5)})
+    """
+    def __init__(self, *args, **kwargs):
+        for i in args:
+            for k, v in i.items():
+                if not isinstance(v, QuCellSocket):
+                    self[k] << v
+                else:
+                    self[k] = v
+        for k, v in kwargs.items():
+            if not isinstance(v, QuCellSocket):
+                self[k] << v
+            else:
+                self[k] = v
+
+    def __setitem__(self, key, item):
+        if not isinstance(item, QuCellSocket):
+            self[key] << item
+        else:
+            self.__dict__[key] = item
+
+    def __getitem__(self, key):
+        return self.__dict__[key]
+
+    def __repr__(self):
+        return repr(self.__dict__)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+    def __delitem__(self, key):
+        del self.__dict__[key]
+
+    def clear(self):
+        return self.__dict__.clear()
+
+    def copy(self):
+        return self.__dict__.copy()
+
+    def has_key(self, k):
+        return self.__dict__.has_key(k)
+
+    def pop(self, k, d=None):
+        return self.__dict__.pop(k, d)
+
+    def update(self, *args, **kwargs):
+        return self.__dict__.update(*args, **kwargs)
+
+    def keys(self):
+        # return self.__dict__.keys()
+        return list(self.__dict__)
+
+    def values(self):
+        return self.__dict__.values()
+
+    def items(self):
+        return self.__dict__.items()
+
+    def pop(self, *args):
+        return self.__dict__.pop(*args)
+
+    def __cmp__(self, dict):
+        return cmp(self.__dict__, dict)
+
+    def __contains__(self, item):
+        return item in self.__dict__
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def __unicode__(self):
+        return unicode(repr(self.__dict__))
+
+
+
