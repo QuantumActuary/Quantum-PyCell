@@ -122,17 +122,20 @@ class Custom(object):
 
 class ValidInputs(dict):
     """
-    A special dict that assumes all values are `QuCellSocket`. `QuCellSocket`s
-    can contain validation functions that determine what happens when a client
-    tries to store a value in the socket. `ValidInputs` helps to manage a dict
-    of these sockets and prevents the `QuCellSocket` from being overwritten by
-    a primitive type. This preserves any validation functions that may have
-    been registered with the sockets.
+    This is a special dict that assumes all values are
+    :class:`~Quantum.QuCellSocket`. QuCellSockets can contain validation
+    functions that determine what happens when a client tries to store a value
+    in the socket. ValidInputs helps to manage a dict of these sockets and
+    prevents the QuCellSocket from being overwritten by a primitive type. This
+    preserves any validation functions that may have been registered with the
+    sockets.
 
-    Examples:
-    inputs = ValidInputs(my_socket=QuCellSocket(1.234))
-    inputs = ValidInputs(a=QuCellSocket('a_value'), b=QuCellSocket('b_value'))
-    inputs = ValidInputs({'c':QuCellSocket(5)})
+    Examples::
+
+      inputs = ValidInputs(my_socket=QuCellSocket(1.234))
+      inputs = ValidInputs(a=QuCellSocket('a_value'), b=QuCellSocket('b_value'))
+      inputs = ValidInputs({'c':QuCellSocket(5)})
+      inputs = ValidInputs(num=1, char='a')
     """
     def __init__(self, *args, **kwargs):
         for i in args:
@@ -154,7 +157,13 @@ class ValidInputs(dict):
             self.__dict__[key] = item
 
     def __getitem__(self, key):
-        return self.__dict__[key]
+        ret = None
+        try:
+            ret = self.__dict__[key]
+        except KeyError:
+            self[key] = QuCellSocket(None)
+            ret = self[key]
+        return ret
 
     def __repr__(self):
         return repr(self.__dict__)
