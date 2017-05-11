@@ -90,6 +90,7 @@ extern "C" PYCELL_API void registerPlugin(Quantum::Kernel &kernel)
 
             kernel.getCellRegistry().addCell(add_this, name);
         }
+        PyRun_SimpleString("import test_pycell");
     }
     catch (bp::error_already_set)
     {
