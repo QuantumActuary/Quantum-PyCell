@@ -12,7 +12,7 @@ import unittest
 import symengine_cell
 import symengine
 from Quantum import *
-from ctrl_command import console_printer
+from ctrl_console import console_printer
 
 
 class Test_SymengineCells(unittest.TestCase):

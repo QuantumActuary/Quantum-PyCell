@@ -2,7 +2,7 @@ import utility_cell
 import unittest
 import Quantum
 from Quantum import QuCell, QuCircuit, QuReturnCode
-from ctrl_command import console_printer
+from ctrl_console import console_printer
 
 
 class Test_UtilityCells(unittest.TestCase):

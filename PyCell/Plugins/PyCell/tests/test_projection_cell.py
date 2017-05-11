@@ -2,7 +2,7 @@ import unittest
 import projection_cell
 import Quantum
 from Quantum import QuCell, QuCircuit
-from ctrl_command import console_printer
+from ctrl_console import console_printer
 
 
 class Test_AstColumnCells(unittest.TestCase):

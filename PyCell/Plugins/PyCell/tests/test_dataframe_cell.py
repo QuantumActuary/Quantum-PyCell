@@ -1,24 +1,28 @@
 import dataframe_cell
+from dataframe_cell import H5
 import unittest
 import Quantum
 from Quantum import QuCell, QuCircuit, QuScheduler
 import pandas as pd
-from ctrl_command import console_printer
+from ctrl_console import console_printer
 from mogwai.constants import OUT
 import csv
 
 
 class Test_DataFrameCells(unittest.TestCase):
     def setUp(self):
-        pass
+        self.csv = 'titles.csv'
+
+    def test_cell_creation(self):
+        c0 = QuCell('Quantum::PyCell::Custom::Read_CSV')
+        c0.inputs['csv'] << self.csv
+        c0.process(0)
+        self.assertTrue(isinstance(c0.outputs['dataframe'].value.df,
+                                   pd.DataFrame))
 
     def test_circuit_editing(self):
-        csv = '/Users/Thomas/pycon-pandas-tutorial-master/data/titles.csv'
-#         d = {'one': pd.Series([1., 2., 3.], index=['a', 'b', 'c']),
-#              'two': pd.Series([1., 2., 3., 4.], index=['a', 'b', 'c', 'd'])}
-#         df = pd.DataFrame(d)
-        c0 = QuCell('Quantum::PyCell::Custom::From_CSV')
-        c0.inputs['csv'] << csv
+        c0 = QuCell('Quantum::PyCell::Custom::Read_CSV')
+        c0.inputs['csv'] << self.csv
         c0.inputs['index_col'] << None
         c1 = QuCell('Quantum::PyCell::Custom::Column')
         c1.inputs['columns'] << 'year'
@@ -32,10 +36,8 @@ class Test_DataFrameCells(unittest.TestCase):
         c.connect(c1, 'data', c2, 'a')
         s = QuScheduler(c)
         s.execute(1)
-        out = []
-        c2.outputs['result'] >> out
-        self.assertTrue(isinstance(out[0], pd.Series))
-#         print(out[-1])
+        out = c2.outputs['result'].value
+        self.assertTrue(isinstance(out.df, pd.Series))
         c.remove(c2)
         c3 = QuCell('Quantum::PyCell::Custom::Eq')
         c3.inputs['b'] << 1
@@ -43,9 +45,8 @@ class Test_DataFrameCells(unittest.TestCase):
         c.connect(c1, 'data', c3, 'a')
         s2 = QuScheduler(c)
         s2.execute(1)
-        c3.outputs['result'] >> out
-        self.assertTrue(isinstance(out[-1], pd.Series))
-#         print(out[-1])
+        out = c3.outputs['result'].value
+        self.assertTrue(isinstance(out.df, pd.Series))
 
 
 @console_printer

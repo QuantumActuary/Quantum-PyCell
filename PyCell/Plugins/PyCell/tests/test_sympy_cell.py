@@ -12,7 +12,7 @@ import unittest
 from sympy import var, diff, integrate
 import sympy_cell
 from Quantum import *
-from ctrl_command import console_printer
+from ctrl_console import console_printer
 
 
 class Test_SympyCells(unittest.TestCase):
@@ -25,21 +25,21 @@ class Test_SympyCells(unittest.TestCase):
         self.x = var('x')
 
     def test_diff(self):
-        self.differ.inputs['f(x)'] = self.x**2
+        self.differ.inputs['f(x)'] = self.x ** 2
         self.differ.inputs['dx'] = self.x
         self.differ.process()
-        self.assertEqual(self.differ.outputs['df/dx'], 2*self.x)
+        self.assertEqual(self.differ.outputs['df/dx'], 2 * self.x)
 
     def test_diff_cell(self):
-        self.differ_cell.inputs['f(x)'] << self.x**2
+        self.differ_cell.inputs['f(x)'] << self.x ** 2
         self.differ_cell.inputs['dx'] << self.x
         self.differ_cell.process()
         result = []
         self.differ_cell.outputs['df/dx'] >> result
-        self.assertEqual(result[-1], diff(self.x**2))
+        self.assertEqual(result[-1], diff(self.x ** 2))
 
     def test_integral(self):
-        self.integral.inputs['f(x)'] = 2*self.x
+        self.integral.inputs['f(x)'] = 2 * self.x
         self.integral.inputs['dx'] = self.x
         self.integral.inputs['lower limit'] = 0
         self.integral.inputs['upper limit'] = 2
@@ -47,7 +47,7 @@ class Test_SympyCells(unittest.TestCase):
         self.assertEqual(self.integral.outputs['F(x)'], 4)
 
     def test_integral_cell(self):
-        self.integral_cell.inputs['f(x)'] << 2*self.x
+        self.integral_cell.inputs['f(x)'] << 2 * self.x
         self.integral_cell.inputs['dx'] << self.x
         self.integral_cell.inputs['lower limit'] << 0
         self.integral_cell.inputs['upper limit'] << 2
