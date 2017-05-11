@@ -5,13 +5,12 @@ Dataframe
 Provides Pandas DataFrame functions.
 """
 import Quantum
-from Quantum import QuReturnCode
+from Quantum import QuReturnCode, QuCellSocket
 import os
 import sys
 import pandas as pd
 from PyCell import registry
-from PyCell.custom_cell import Custom
-from PyCell.custom_cell import exception_raiser
+from PyCell.custom_cell import Custom, ValidInputs, exception_raiser
 # import matplotlib.pyplot as plt
 from kivy.clock import mainthread
 from multiprocessing import Process, Pipe
@@ -166,13 +165,14 @@ def data_process(func):
        therefore, will not emit any print statements.
     """
     def process_func(*args, **kwargs):
-        assert isinstance(args[0], Custom), 'args[0] must be self'
+#        assert isinstance(args[0], Custom), 'args[0] must be self'
         file = '{}.h5'.format(args[0].py_id)
         node = 'c{}'.format(args[0].py_id)
-        assert isinstance(args[1], H5), 'args[1] must be an H5'
+        if not isinstance(args[1], H5):
+            raise TypeError('args[1] must be an H5')
 
         @exception_raiser
-        def multi_process(conn, file, node, func, *args, **kwargs):
+        def multi_process(conn, file, node, func, *new_args, **kwargs):
             try:
                 df = func(*args, **kwargs)
                 data_cols = args[1].data_columns
@@ -427,15 +427,16 @@ class Read_CSV(Custom):
     :rtype: H5
     """
     infer_datetime_format = {'True': 'True', 'False': 'False'}
+    inputs = {'csv': None, 'index_col': None, 'parse_dates': None,
+              'infer_datetime_format': {},
+              'data_columns': []}
+    outputs = {'dataframe': None}
     required = ['csv']
 
     def __init__(self):
         super().__init__()
         self.return_msg_ = 'Give me a csv file!'
-        self.inputs = {'csv': None, 'index_col': None, 'parse_dates': None,
-                       'infer_datetime_format': Read_CSV.infer_datetime_format,
-                       'data_columns': []}
-        self.outputs = {'dataframe': None}
+        self.inputs['infer_datetime_format'] = Read_CSV.infer_datetime_format
 
     def read_csv(self):
         kwargs = {}
@@ -448,7 +449,7 @@ class Read_CSV(Custom):
                                 self.inputs['infer_datetime_format'])
 
         dfkwargs = {}
-        if self.is_valid_input(self.inputs['data_columns']):
+        if self.inputs['data_columns'] is not None:
             dfkwargs['data_columns'] = self.inputs['data_columns']
 
         node = os.path.splitext(os.path.basename(self.inputs['csv']))[0]
@@ -486,12 +487,12 @@ class Iloc(Custom):
     :returns: The requested rows and columns.
     :rtype: H5
     """
+    inputs = {'axis0': None, 'axis1': None, 'data': None}
+    outputs = {'dataframe': None}
     required = ['data']
 
     def __init__(self):
         self.return_msg_ = 'I\'m ready!'
-        self.inputs = {'axis0': None, 'axis1': None, 'data': None}
-        self.outputs = {'dataframe': None}
 
     @data_process
     def iloc(self, h5):
@@ -520,12 +521,12 @@ class Loc(Custom):
     :returns: The requested rows and columns.
     :rtype: H5
     """
+    inputs = {'axis0': None, 'axis1': None, 'data': None}
+    outputs = {'dataframe': None}
     required = ['data']
 
     def __init__(self):
         self.return_msg_ = 'I\'m ready!'
-        self.inputs = {'axis0': None, 'axis1': None, 'data': None}
-        self.outputs = {'dataframe': None}
 
     @data_process
     def loc(self, h5):
@@ -553,24 +554,28 @@ class Head(Custom):
     :rtype: H5
     """
     required = ['data']
+    inputs = ValidInputs(n=5, data=None)
+    outputs = {'dataframe': None}
+
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'I\'m ready!'
-        self.inputs = {'n': 5, 'data': None}
-        self.outputs = {'dataframe': None}
+        self.inputs['n'].set_validator(self.validate_n)
+        self.inputs['data'] = None
 
     @data_process
     def head(self, h5):
-        # select start and stop params dont work for series for some reason.
-        stop = self.inputs['n']
-        if stop is None:
-            stop = 5
-        df = h5.select(start=0, stop=stop)
-        # calling head on df because df might be a series.
-        return df.head(stop)
+        return h5.df.head(self.inputs['n'].value)
+
+    def validate_n(self, val):
+        if not isinstance(val, int):
+            self.inputs['n'] << Head.inputs['n'].value
+            return False
+        return True
 
     def process(self):
-        self.outputs['dataframe'] = self.head(self.inputs['data'])
+        self.outputs['dataframe'] = self.head(self.inputs['data'].value)
         return super().process()
 
 
@@ -585,12 +590,14 @@ class Tail(Custom):
     :returns: The requested number rows.
     :rtype: H5
     """
+    inputs = ValidInputs({'n': 5, 'data': None})
+    outputs = {'dataframe': None}
     required = ['data']
 
     def __init__(self):
         self.return_msg_ = 'I\'m ready!'
-        self.inputs = {'n': 5, 'data': None}
-        self.outputs = {'dataframe': None}
+        self.inputs['n'].set_validator(self.validate_n)
+        self.inputs['data'] = None
 
     @data_process
     def tail(self, h5):
@@ -598,10 +605,16 @@ class Tail(Custom):
         df = h5.select(start=nrows - self.inputs['n'], stop=nrows)
         # df might be a series, in which case, the select will not respect
         # the start and stop parameters, so call tail on df.
-        return df.tail(self.inputs['n'])
+        return df.tail(self.inputs['n'].value)
+
+    def validate_n(self, val):
+        if not isinstance(val, int):
+            self.inputs['n'] << Tail.inputs['n'].value
+            return False
+        return True
 
     def process(self):
-        self.outputs['dataframe'] = self.tail(self.inputs['data'])
+        self.outputs['dataframe'] = self.tail(self.inputs['data'].value)
         return super().process()
 
 
