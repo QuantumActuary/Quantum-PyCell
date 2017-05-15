@@ -12,13 +12,19 @@ import test_logic_cell
 import test_dataframe_cell
 from command import SingletonCommand
 import Quantum
+from threading import Thread
 
 class TestPyCell(SingletonCommand):
     """
     Run PyCell unit tests.
     """
-    def execute(self):
+    def run_all_tests(self):
         test_dataframe_cell.run_test()
+
+    def execute(self):
+        self.run_all_tests()
+#        t = Thread(target=self.run_all_tests)
+#        t.start()
 
     @property
     def name(self):

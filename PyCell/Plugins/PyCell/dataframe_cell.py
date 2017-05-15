@@ -428,8 +428,7 @@ class Read_CSV(Custom):
     """
     infer_datetime_format = {'True': 'True', 'False': 'False'}
     inputs = {'csv': None, 'index_col': None, 'parse_dates': None,
-              'infer_datetime_format': {},
-              'data_columns': []}
+              'infer_datetime_format': {}, 'data_columns': []}
     outputs = {'dataframe': None}
     required = ['csv']
 
@@ -492,6 +491,7 @@ class Iloc(Custom):
     required = ['data']
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'I\'m ready!'
 
     @data_process
@@ -526,6 +526,7 @@ class Loc(Custom):
     required = ['data']
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'I\'m ready!'
 
     @data_process
@@ -595,17 +596,14 @@ class Tail(Custom):
     required = ['data']
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'I\'m ready!'
         self.inputs['n'].set_validator(self.validate_n)
         self.inputs['data'] = None
 
     @data_process
     def tail(self, h5):
-        nrows = h5.store.get_storer(h5.node).nrows
-        df = h5.select(start=nrows - self.inputs['n'], stop=nrows)
-        # df might be a series, in which case, the select will not respect
-        # the start and stop parameters, so call tail on df.
-        return df.tail(self.inputs['n'].value)
+        return h5.df.tail(self.inputs['n'].value)
 
     def validate_n(self, val):
         if not isinstance(val, int):
@@ -632,11 +630,12 @@ class Sort_Values(Custom):
     :rtype: H5
     """
     required = ['data']
+    inputs = {'data': None, 'column_list': []}
+    outputs = {'data': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to sort.'
-        self.inputs = {'data': None, 'column_list': []}
-        self.outputs = {'data': None}
 
     @data_process
     def sort_values(self, h5):
@@ -674,6 +673,7 @@ class Column(Custom):
     outputs = {'data': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to select columns!'
 
     @data_process
@@ -705,11 +705,12 @@ class IsNull(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to filter for nulls!'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def isnull(self, h5):
@@ -731,11 +732,12 @@ class NotNull(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to filter for nulls!'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def notnull(self, h5):
@@ -761,11 +763,13 @@ class Select(Custom):
     :rtype: H5
     """
     required = ['data']
+    inputs = {'data': None, 'sieve': None, 'expression': ''}
+    outputs = {'dataframe': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to select.'
-        self.inputs = {'data': None, 'sieve': None, 'expression': ''}
-        self.outputs = {'dataframe': None}
+
 
     @data_process
     def select(self, h5):
@@ -793,11 +797,12 @@ class Sort_Index(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to sort.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def sort_index(self, h5):
@@ -819,10 +824,11 @@ class Value_Counts(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
+        super().__init__()
         self.return_msg_ = 'Ready to tally.'
 
     @data_process
@@ -845,11 +851,12 @@ class Str_Len(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to len.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def str_len(self, h5):
@@ -873,11 +880,12 @@ class Str_Contains(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None, 'substring': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to match substring.'
-        self.inputs = {'series': None, 'substring': None}
-        self.outputs = {'series': None}
 
     @data_process
     def str_contains(self, h5):
@@ -903,11 +911,12 @@ class Str_StartsWith(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None, 'substring': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to match substring.'
-        self.inputs = {'series': None, 'substring': None}
-        self.outputs = {'series': None}
 
     @data_process
     def str_startswith(self, h5):
@@ -939,12 +948,13 @@ class GroupBy(Custom):
     """
     aggregation = {'size': 'size', 'min': 'min', 'mean': 'mean', 'max': 'max'}
     required = ['dataframe', 'columns']
+    inputs = {'dataframe': None, 'columns': None, 'aggregation': {}}
+    outputs = {'data': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to group data.'
-        self.inputs = {'dataframe': None, 'columns': None,
-                       'aggregation': GroupBy.aggregation}
-        self.outputs = {'data': None}
+        self.inputs['aggregation'] = GroupBy.aggregation
 
     def start(self):
         self.return_msg_ = 'Starting to process.'
@@ -985,11 +995,12 @@ class Set_Index(Custom):
     :rtype: H5
     """
     required = ['dataframe', 'columns']
+    inputs = {'dataframe': None, 'columns': None}
+    outputs = {'dataframe': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to re-index data.'
-        self.inputs = {'dataframe': None, 'columns': None}
-        self.outputs = {'dataframe': None}
 
     @data_process
     def set_index(self, h5):
@@ -1020,11 +1031,12 @@ class Unstack(Custom):
     :rtype: H5
     """
     required = ['data']
+    inputs = {'data': None, 'level':-1, 'fill_value': None}
+    outputs = {'data': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to unstack data.'
-        self.inputs = {'data': None, 'level':-1, 'fill_value': None}
-        self.outputs = {'data': None}
 
     @data_process
     def unstack(self, h5):
@@ -1062,11 +1074,12 @@ class Stack(Custom):
     :rtype: H5
     """
     required = ['data']
+    inputs = {'data': None, 'level':-1, 'dropna': True}
+    outputs = {'data': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to stack data.'
-        self.inputs = {'data': None, 'level':-1, 'dropna': True}
-        self.outputs = {'data': None}
 
     @data_process
     def stack(self, h5):
@@ -1094,11 +1107,12 @@ class Year(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to extract year.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def year(self, h5):
@@ -1120,11 +1134,12 @@ class Month(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to extract month.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def month(self, h5):
@@ -1146,11 +1161,12 @@ class Day(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to extract day.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def day(self, h5):
@@ -1172,11 +1188,12 @@ class DayOfWeek(Custom):
     :rtype: H5
     """
     required = ['series']
+    inputs = {'series': None}
+    outputs = {'series': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to extract day of week.'
-        self.inputs = {'series': None}
-        self.outputs = {'series': None}
 
     @data_process
     def dayofweek(self, h5):
@@ -1243,14 +1260,16 @@ class Merge(Custom):
     how = {'left': 'left', 'right': 'right', 'outer': 'outer',
            'inner': 'inner'}
     required = ['A', 'B']
+    inputs = {'A': None, 'B': None, 'how': {}, 'on': None,
+              'left_on': None, 'right_on': None, 'left_index': False,
+              'right_index': False, 'sort': False, 'suffixes': None,
+              'copy': True}
+    outputs = {'dataframe': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to merge.'
-        self.inputs = {'A': None, 'B': None, 'how': Merge.how, 'on': None,
-                       'left_on': None, 'right_on': None, 'left_index': False,
-                       'right_index': False, 'sort': False, 'suffixes': None,
-                       'copy': True}
-        self.outputs = {'dataframe': None}
+        self.inputs['how'] = Merge.how
 
     @data_process
     def merge(self, h5):
@@ -1327,12 +1346,13 @@ class Pivot(Custom):
               operations.
     """
     required = ['dataframe', 'columns']
+    inputs = {'dataframe': None, 'index': None, 'columns': None,
+              'values': None}
+    outputs = {'dataframe': None}
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = 'Ready to pivot.'
-        self.inputs = {'dataframe': None, 'index': None, 'columns': None,
-                       'values': None}
-        self.outputs = {'dataframe': None}
 
     @data_process
     def pivot(self, h5):
@@ -1375,6 +1395,7 @@ class Update(Custom):
     required = ['data', 'column', 'values']
 
     def __init__(self):
+        super().__init__()
         self.return_msg_ = "Ready to update data."
 
     @data_process
